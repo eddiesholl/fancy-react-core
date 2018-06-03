@@ -1,0 +1,49 @@
+{
+  "name": "fancy-react-core",
+  "version": "1.0.0",
+  "description": "Core cross platform library for fancy-react, a set of react developer IDE tools",
+  "main": "lib/index.js",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "test": "jest",
+    "build": "babel src --out-dir lib --extensions \".ts,.tsx\"",
+    "build:watch": "babel src -w --out-dir lib --extensions \".ts,.tsx\"",
+    "type-check": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eddiesholl/fancy-react-core.git"
+  },
+  "keywords": [
+    "react",
+    "ide",
+    "code-generation",
+    "fancy"
+  ],
+  "author": "Eddie Sholl",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eddiesholl/fancy-react-core/issues"
+  },
+  "homepage": "https://github.com/eddiesholl/fancy-react-core#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.42",
+    "@babel/core": "^7.0.0-beta.42",
+    "@babel/preset-env": "^7.0.0-beta.42",
+    "@babel/preset-typescript": "^7.0.0-beta.42",
+    "@types/node": "^10.3.0",
+    "tslint": "^5.10.0",
+    "typescript": "^2.9.1"
+  },
+  "dependencies": {
+    "@types/ramda": "^0.25.32",
+    "acorn-jsx": "^4.1.1",
+    "acorn-object-spread": "^1.0.0",
+    "acorn-static-class-property-initializer": "^1.0.0",
+    "astring": "^1.3.0",
+    "estel-estree-builder": "^0.1.0",
+    "folktale": "^2.1.0",
+    "ramda": "^0.25.0",
+    "tcomb": "^3.2.27"
+  }
+}
