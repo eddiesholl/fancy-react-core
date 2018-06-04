@@ -4,7 +4,7 @@ import e, { ImportDeclaration, Property } from 'estel-estree-builder/generated/e
 import Result from 'folktale/result';
 import path from 'path';
 
-import { ComponentGeneration } from './types';
+import { ComponentGeneration } from './tcomb';
 import { validComponentName } from './utils';
 
 import { parse } from './acorn';

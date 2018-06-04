@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "description": "Core cross platform library for fancy-react, a set of react developer IDE tools",
   "main": "lib/index.js",
-  "types": "types/index.d.ts",
+  "types": "lib/types.d.ts",
   "scripts": {
     "test": "jest",
-    "build": "babel src --out-dir lib --extensions \".ts,.tsx\"",
-    "build:watch": "babel src -w --out-dir lib --extensions \".ts,.tsx\"",
+    "compile": "tsc && cp src/types.d.ts lib",
+    "build": "tsc",
+    "build:watch": "tsc -w",
     "type-check": "tsc"
   },
   "repository": {

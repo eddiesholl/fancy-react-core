@@ -1,4 +1,4 @@
-import acorn from 'acorn';
+import acorn = require('acorn');
 import injectAcornJsx from 'acorn-jsx/inject';
 import injectAcornObjectSpreadJsx from 'acorn-object-spread/inject';
 import injectAcornStaticClassPropertyInitializer from 'acorn-static-class-property-initializer/inject';

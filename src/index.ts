@@ -1,9 +1,10 @@
-const { State } = require("./types");
+import { IState } from "./types";
+
 const fs = require("fs");
 
 const { generateComponent } = require("./react-content");
 
-const generate = ( { ide }: State) => {
+export const generate = ( { ide }: IState) => {
   const editor = ide.getEditor();
   const inputText = editor.getText();
   const cursorPosition = editor.getCursorPosition();
@@ -40,6 +41,3 @@ const generate = ( { ide }: State) => {
   });
 };
 
-module.exports = {
-  generate,
-}
