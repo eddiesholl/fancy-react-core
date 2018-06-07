@@ -1,4 +1,16 @@
-import e, { } from 'estel-estree-builder/generated/es2015';
+import e, {
+  ArrowFunctionExpression,
+  AssignmentExpression,
+  CallExpression,
+  Class,
+  Function,
+  FunctionExpression,
+  Identifier,
+  MemberExpression,
+  SourceLocation,
+  VariableDeclaration,
+} from 'estel-estree-builder/generated/es2015';
+
 import R from 'ramda';
 
 import { isString, mergeArrays, noNulls, pad } from './utils';
@@ -19,7 +31,7 @@ const s6 = space(6);
 const s8 = space(8);
 const propPad = `\n${s8}`;
 
-export const buildRenderFunc = (name, propTypes) => {
+export const buildRenderFunc = (name, propTypes): Function => { // tslint:disable-line
   propTypes = propTypes || [];
   const propAssigns = propTypes.map((p) => {
     return `${p.propName}={${p.mockName}}`;
@@ -49,23 +61,15 @@ export const buildItBlock = (desc, body) => {
     [e.literal(desc), e.arrowFunctionExpression(body, [])]);
 };
 
-export const buildClass = (className: string, superClass: string, methods) => {
+export const buildClass = (className: string, superClass: string, methods): Class => {
   const methodDefs = Object.keys(methods).map((k) => {
     const def = methods[k];
     return e.methodDefinition(e.identifier(k), def, 'get');
   });
   return e.class(e.classBody(methodDefs), "ClassDeclaration", e.identifier(className), e.identifier(superClass));
 };
-/*
-namedImportMaps = [{
-  importPath: ['named1', 'named2']
-}]
-defaultImportMaps = [{
-  importPath: 'defaultItemName'
-}]
 
-*/
-export const buildImportStmts = (namedImportMaps, defaultImportMaps, exportSuiteTrees?: any[]) => {
+export const buildImportStmts = (namedImportMaps, defaultImportMaps, exportSuiteTrees?: any[]): Identifier[] => {
   const imports = {};
 
   if (exportSuiteTrees) {
@@ -115,15 +119,15 @@ export const buildImportStmts = (namedImportMaps, defaultImportMaps, exportSuite
   return importStmts;
 };
 
-export const dot = (target, prop) => {
+export const dot = (target, prop): MemberExpression => {
   return e.memberExpression(target, e.identifier(prop));
 };
 
-export const assign = (left, right) => {
+export const assign = (left, right): AssignmentExpression => {
   return e.assignmentExpression('=', left, right);
 };
 
-export const arrow = (...body) => {
+export const arrow = (...body): ArrowFunctionExpression => {
   return e.arrowFunctionExpression(e.functionBody(noNulls(body)), []);
 };
 
@@ -131,23 +135,23 @@ export const fn = (...body) => {
   return fnArgs([], body);
 };
 
-export const fnArgs = (args, ...rest) => {
+export const fnArgs = (args, ...rest): FunctionExpression => {
   return e.functionExpression(args, e.functionBody(noNulls(rest)));
 };
 
-export const vr = (name, val) => {
+export const vr = (name, val): VariableDeclaration => {
   return e.variableDeclaration([e.variableDeclarator(e.identifier(name), val)], "var");
 };
 
-export const cnst = (name, val) => {
+export const cnst = (name, val): VariableDeclaration => {
   return e.variableDeclaration([e.variableDeclarator(e.identifier(name), val)], "const");
 };
 
-export const lt = (name, val) => {
+export const lt = (name, val): VariableDeclaration => {
   return e.variableDeclaration([e.variableDeclarator(e.identifier(name), val)], "let");
 };
 
-export const callFn = (callee, args) => {
+export const callFn = (callee, args): CallExpression => {
   return e.callExpression(isString(callee) ? e.identifier(callee) : callee, args || []);
 };
 

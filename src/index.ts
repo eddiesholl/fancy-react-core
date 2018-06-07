@@ -1,10 +1,43 @@
-import { ComponentDetails, IFileSystem, IState } from "./types";
+/* tslint:disable:max-classes-per-file */
 
+import { ComponentDetails, IFileSystem, IFormatter, IIDE, IState, Project } from "./types";
+const R = require('ramda');
+
+import { Eslinter } from './eslint';
 const fs = require("fs");
 const path = require("path");
 const mkdirp = require("mkdirp");
 
 const { generateComponent } = require("./react-content");
+
+export const baz = () => { return; };
+
+export class Formatter implements IFormatter {
+  private ide: IIDE;
+  private linter;
+  constructor(project: Project, ide: IIDE) {
+    this.ide = ide;
+
+    const eslintDep = R.path(['dependencies', 'eslint'], project.pkgJson);
+    const eslintDevDep = R.path(['devDependencies', 'eslint'], project.pkgJson);
+
+    if (eslintDep || eslintDevDep) {
+      this.linter = new Eslinter(project.projectRoot);
+    }
+  }
+
+  public format(text, fileName) {
+    try {
+      return this.linter ?
+        this.linter.format(text, fileName) :
+        text;
+    } catch (e) {
+      this.ide.log(`Failed to format output: ${e.message}`);
+
+      return text;
+    }
+  }
+}
 
 export class FileSystem implements IFileSystem {
   public createComponent(component: ComponentDetails) {
@@ -30,7 +63,7 @@ export class FileSystem implements IFileSystem {
 export const fancyReactSettings: string[] =
     ["testStructure", "packagePath", "sourcePath", "testPath", "testSuffix"];
 
-export const generate = ( { fileSystem, ide, project }: IState) => {
+export const generate = ( { fileSystem, formatter, ide, project }: IState) => {
   const editor = ide.getEditor();
   const inputText = editor.getText();
   const cursorPosition = editor.getCursorPosition();
@@ -50,12 +83,12 @@ export const generate = ( { fileSystem, ide, project }: IState) => {
           //   { row: change.lineNumber + ix - 1, column: 0 });
           // editor.insertNewline();
           // editor.moveUp(1);
-          editor.setText(change.content);
+          editor.insertText({line: change.lineNumber + ix - 1, character: 0}, change.content);
           // editor.insertText(change.content);
         });
       }
       ide.open(componentDetails.componentPath).then((newEditor) => {
-        const formattedContent = this.output.format(
+        const formattedContent = formatter.format(
           value.content,
           componentDetails.componentPath,
         );

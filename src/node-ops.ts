@@ -1,6 +1,6 @@
 /* tslint:disable:no-console */
 import R from 'ramda';
-import { IPosition } from './types';
+import { Position } from './types';
 
 const firstVal = (a) => {
   return a.filter(hasValue).shift();
@@ -61,21 +61,21 @@ export const searchBy = (currentNode, tester, options: ISearchOptions = { lower:
 export const searchByLocation = (node, point) => {
   return searchBy(node, byLocation(point));
 };
-export const searchByLocationAndType = (node, point: IPosition, type: string) => {
+export const searchByLocationAndType = (node, point: Position, type: string) => {
   const bl = byLocation(point);
   const bt = byType(type);
   return searchBy(node, (n) => bt(n) && bl(n), { lower: true });
 };
 
-const pointAfter = (p: IPosition, a) => {
+const pointAfter = (p: Position, a) => {
   return p && a &&
     ((p.line === a.line && p.character > a.column) || (p.line > a.line));
 };
 
-const pointWithin = (p: IPosition, a, b) => {
+const pointWithin = (p: Position, a, b) => {
   return pointAfter(p, a) && pointAfter(b, p);
 };
-export const byLocation = (point: IPosition) => {
+export const byLocation = (point: Position) => {
   return (n) => {
     if (!point || !n || !n.loc) { return false; }
     const start = n.loc.start;

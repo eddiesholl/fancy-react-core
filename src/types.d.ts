@@ -1,3 +1,4 @@
+export * from './formatter';
 export * from './index';
 
 export type TestStructure = "ParallelDirs" | "SameDir" | "SubDir";
@@ -33,10 +34,18 @@ export interface FancyReactSettings {
   testSuffix: MaybeSettingValue;
 }
 
+// export declare class Formatter {
+//   private ide;
+//   private linter;
+//   constructor(project: Project, ide: IIDE);
+//   format(text: any, fileName: any): any;
+// }
+
 export interface IState {
   ide: IIDE;
   project: Project;
   fileSystem: IFileSystem;
+  formatter: Formatter;
 }
 
 export interface IIDE {
@@ -57,15 +66,24 @@ export class FileSystem implements IFileSystem {
   ensureFileExists: (path: string) => void;
 }
 
-export interface IPosition {
+export interface IFormatter {
+  format: (input: string, fileName: string) => string;
+}
+
+export declare class Formatter implements IFormatter {
+  constructor(project: Project, ide: IIDE);
+  format: (input: string, fileName: string) => string;
+}
+
+export type Position = {
   line: number;
   character: number;
 }
 
 export interface IEditor {
   getText: () => string;
-  getCursorPosition: () => IPosition;
-  insertText: (position: IPosition, newText: string) => Promise<boolean>;
+  getCursorPosition: () => Position;
+  insertText: (position: Position, newText: string) => Promise<boolean>;
   setText: (text: string) => void;
   // insertNewline
   // moveUp(

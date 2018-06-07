@@ -19,9 +19,9 @@ import {
   fnArgs,
   raw,
 } from './tree-builders';
-import { IPosition } from './types';
+import { Position } from './types';
 
-export const generateComponent = (inputText: string, point: IPosition, sourcePath: string) => {
+export const generateComponent = (inputText: string, point: Position, sourcePath: string) => {
   const tree = parse(inputText);
   printNode(tree);
   const jsxBlock = searchByLocationAndType(
@@ -120,12 +120,6 @@ const generateRender = (className: string, attributeNodes: Node[]) => {
     )`)),
   );
 };
-
-/*    var {a, b} = this.props;
-return (
-  <div>
-    Here is a 'Nested'
-  </div>*/
 
 const generateProps = (className: string, attributeNodes: any[]) => {
   const objProps = attributeNodes.map((a) => {
