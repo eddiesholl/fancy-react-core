@@ -28,7 +28,7 @@ export const Paths = t.struct({
 }, 'Paths');
 
 export const ComponentGeneration = t.struct({
-  ast: t.Object,
+  ast: t.Array,
   changesToCaller: t.Array,
   componentName: t.String,
   content: t.String,

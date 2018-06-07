@@ -19,14 +19,14 @@ import {
   fnArgs,
   raw,
 } from './tree-builders';
+import { IPosition } from './types';
 
-export const generateComponent = (inputText, point, sourcePath) => {
+export const generateComponent = (inputText: string, point: IPosition, sourcePath: string) => {
   const tree = parse(inputText);
   printNode(tree);
   const jsxBlock = searchByLocationAndType(
     tree,
-    // Note difference between Point and Position
-    { line: point.row + 1, column: point.column },
+    point,
     'JSXElement');
 
   if (!jsxBlock) { throw new Error(`Could not locate a JSX snippet near point ${point}`); }
@@ -105,7 +105,8 @@ export const importNewComponent = (nodes: ImportDeclaration[], compName: string,
 
 const generateRender = (className: string, attributeNodes: Node[]) => {
   const propVars = attributeNodes.map((a: Node) => {
-    return e.assignmentProperty(e.identifier('wut'), R.path(['name', 'name'], a));
+    const propName = e.identifier(R.path<string>(['name', 'name'], a));
+    return e.property(propName, propName, "init");
   });
   const objPattern = e.objectPattern(propVars);
   const thisDotProps = dot(e.thisExpression(), 'props');

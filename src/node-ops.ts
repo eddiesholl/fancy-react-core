@@ -1,5 +1,6 @@
 /* tslint:disable:no-console */
 import R from 'ramda';
+import { IPosition } from './types';
 
 const firstVal = (a) => {
   return a.filter(hasValue).shift();
@@ -60,21 +61,21 @@ export const searchBy = (currentNode, tester, options: ISearchOptions = { lower:
 export const searchByLocation = (node, point) => {
   return searchBy(node, byLocation(point));
 };
-export const searchByLocationAndType = (node, point, type) => {
+export const searchByLocationAndType = (node, point: IPosition, type: string) => {
   const bl = byLocation(point);
   const bt = byType(type);
   return searchBy(node, (n) => bt(n) && bl(n), { lower: true });
 };
 
-const pointAfter = (p, a) => {
+const pointAfter = (p: IPosition, a) => {
   return p && a &&
-    ((p.line === a.line && p.column > a.column) || (p.line > a.line));
+    ((p.line === a.line && p.character > a.column) || (p.line > a.line));
 };
 
-const pointWithin = (p, a, b) => {
+const pointWithin = (p: IPosition, a, b) => {
   return pointAfter(p, a) && pointAfter(b, p);
 };
-export const byLocation = (point) => {
+export const byLocation = (point: IPosition) => {
   return (n) => {
     if (!point || !n || !n.loc) { return false; }
     const start = n.loc.start;
@@ -142,7 +143,7 @@ export const printNode = (node, depth = 0) => {
     return;
   }
 
-  const pad = Array(indent).map(() => '|\t').join('');
+  const pad = R.range(0,  indent).map(() => '|  ').join('');
   const nextDepth = indent + 1;
   const sub = (s) => {
     const next = node[s];
@@ -162,7 +163,7 @@ export const printNode = (node, depth = 0) => {
       node[s].forEach((n) => printNode(n, nextDepth));
     }
   };
-  console.log(pad + node.type + " " + (node.name || node.value || node.operator || ''));
+  console.log(pad + node.type + " " + (node.name || node.operator || ''));
 
   const subs = ['id', 'init', 'body', 'declaration', 'key', 'argument',
     'expression', 'callee', 'object', 'property', 'source', 'local',

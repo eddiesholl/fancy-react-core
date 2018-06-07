@@ -1,24 +1,48 @@
-import { IState } from "./types";
+import { ComponentDetails, IFileSystem, IState } from "./types";
 
 const fs = require("fs");
+const path = require("path");
+const mkdirp = require("mkdirp");
 
 const { generateComponent } = require("./react-content");
 
-export const generate = ( { ide }: IState) => {
+export class FileSystem implements IFileSystem {
+  public createComponent(component: ComponentDetails) {
+    this.ensureFolderExists(component.folderPath);
+    this.ensureFileExists(component.stylesPath);
+    this.ensureFileExists(component.componentPath);
+  }
+
+  public ensureFolderExists(pathToCheck: string) {
+    const dirPath = path.extname(pathToCheck) ? path.dirname(pathToCheck) : pathToCheck;
+    if (!fs.existsSync(dirPath)) {
+      mkdirp.sync(dirPath);
+    }
+  }
+
+  public ensureFileExists(pathToCheck: string) {
+    if (!fs.existsSync(pathToCheck)) {
+      fs.closeSync(fs.openSync(pathToCheck, 'w'));
+    }
+  }
+}
+
+export const fancyReactSettings: string[] =
+    ["testStructure", "packagePath", "sourcePath", "testPath", "testSuffix"];
+
+export const generate = ( { fileSystem, ide, project }: IState) => {
   const editor = ide.getEditor();
   const inputText = editor.getText();
   const cursorPosition = editor.getCursorPosition();
 
-  const result = generateComponent(inputText, cursorPosition, this.config.sourcePath);
+  const result = generateComponent(inputText, cursorPosition, project.sourcePath);
 
   result.matchWith({
     Error: ({ value }) => ide.log(`Component generation failed: ${value}`),
     Ok: ({ value }) => {
-      const componentDetails = this.pathFuncs.componentDetails(value.componentName);
+      const componentDetails = project.componentDetails(value.componentName);
 
-      if (!fs.existsSync(componentDetails.folderPath)) {
-        this.pathEnv.createComponentFolder(componentDetails);
-      }
+      fileSystem.createComponent(componentDetails);
 
       if (value.changesToCaller) {
         value.changesToCaller.forEach((change, ix) => {
@@ -40,4 +64,3 @@ export const generate = ( { ide }: IState) => {
     },
   });
 };
-

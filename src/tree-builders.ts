@@ -49,12 +49,12 @@ export const buildItBlock = (desc, body) => {
     [e.literal(desc), e.arrowFunctionExpression(body, [])]);
 };
 
-export const buildClass = (className, superClass, methods) => {
+export const buildClass = (className: string, superClass: string, methods) => {
   const methodDefs = Object.keys(methods).map((k) => {
     const def = methods[k];
     return e.methodDefinition(e.identifier(k), def, 'get');
   });
-  return e.class(e.classBody(methodDefs), className, className, superClass);
+  return e.class(e.classBody(methodDefs), "ClassDeclaration", e.identifier(className), e.identifier(superClass));
 };
 /*
 namedImportMaps = [{
