@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Core cross platform library for fancy-react, a set of react developer IDE tools",
   "main": "lib/index.js",
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "types": "lib/types.d.ts",
   "scripts": {
     "test": "jest",
@@ -34,6 +36,7 @@
     "@babel/preset-env": "^7.0.0-beta.42",
     "@babel/preset-typescript": "^7.0.0-beta.42",
     "@types/node": "^10.3.0",
+    "jest": "^23.1.0",
     "tslint": "^5.10.0",
     "typescript": "^2.9.1"
   },
