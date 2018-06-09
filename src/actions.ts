@@ -1,7 +1,5 @@
 /* tslint:disable:max-classes-per-file */
-const R = require('ramda');
-
-import { ComponentDetails, IFileSystem, IFormatter, IIDE, IState, Project } from "./types";
+import { ComponentDetails, IFileSystem, IIDE, IState, Project } from "./types";
 const { generateComponent } = require("./react-content");
 
 export const generate = ( { fileSystem, formatter, ide, project }: IState) => {

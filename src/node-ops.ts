@@ -2,6 +2,31 @@
 import R from 'ramda';
 import { Position } from './types';
 
+const hasValue = (n) => !!n;
+
+const pointAfter = (p: Position, a) => {
+  return p && a &&
+    ((p.line === a.line && p.character > a.column) || (p.line > a.line));
+};
+
+const pointWithin = (p: Position, a, b) => {
+  return pointAfter(p, a) && pointAfter(b, p);
+};
+
+export const byType = (type) => {
+  return (n) => {
+    return n.type === type;
+  };
+};
+export const byLocation = (point: Position) => {
+  return (n) => {
+    if (!point || !n || !n.loc) { return false; }
+    const start = n.loc.start;
+    const end = n.loc.end;
+    return pointWithin(point, start, end);
+  };
+};
+
 const firstVal = (a) => {
   return a.filter(hasValue).shift();
 };
@@ -10,10 +35,6 @@ const nodesToDescend = [
   'left', 'right', 'value', 'argument', 'openingElement',
   'declarations', 'children',
 ];
-
-export const searchByType = (node, type) => {
-  return searchBy(node, byType(type));
-};
 
 interface ISearchOptions { lower: boolean; }
 
@@ -57,7 +78,9 @@ export const searchBy = (currentNode, tester, options: ISearchOptions = { lower:
 
   return result;
 };
-
+export const searchByType = (node, type) => {
+  return searchBy(node, byType(type));
+};
 export const searchByLocation = (node, point) => {
   return searchBy(node, byLocation(point));
 };
@@ -65,28 +88,6 @@ export const searchByLocationAndType = (node, point: Position, type: string) => 
   const bl = byLocation(point);
   const bt = byType(type);
   return searchBy(node, (n) => bt(n) && bl(n), { lower: true });
-};
-
-const pointAfter = (p: Position, a) => {
-  return p && a &&
-    ((p.line === a.line && p.character > a.column) || (p.line > a.line));
-};
-
-const pointWithin = (p: Position, a, b) => {
-  return pointAfter(p, a) && pointAfter(b, p);
-};
-export const byLocation = (point: Position) => {
-  return (n) => {
-    if (!point || !n || !n.loc) { return false; }
-    const start = n.loc.start;
-    const end = n.loc.end;
-    return pointWithin(point, start, end);
-  };
-};
-export const byType = (type) => {
-  return (n) => {
-    return n.type === type;
-  };
 };
 
 export const searchBySuperClass = (node, superClassName) => {
@@ -173,5 +174,3 @@ export const printNode = (node, depth = 0) => {
   const iters = ['declarations', 'params', 'properties', 'arguments', 'specifiers'];
   iters.forEach(iter);
 };
-
-const hasValue = (n) => !!n;

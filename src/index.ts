@@ -1,6 +1,6 @@
 /* tslint:disable:max-classes-per-file */
 
-import { ComponentDetails, IFileSystem, IFormatter, IIDE, IState, Project } from "./types";
+import { ComponentDetails, IFileSystem, IFormatter, IIDE, Project } from "./types";
 const R = require('ramda');
 
 import { Eslinter } from './eslint';

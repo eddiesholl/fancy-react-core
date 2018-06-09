@@ -7,13 +7,20 @@ import e, {
   FunctionExpression,
   Identifier,
   MemberExpression,
-  SourceLocation,
   VariableDeclaration,
 } from 'estel-estree-builder/generated/es2015';
 
 import R from 'ramda';
 
 import { isString, mergeArrays, noNulls, pad } from './utils';
+
+export const arrow = (...body): ArrowFunctionExpression => {
+  return e.arrowFunctionExpression(e.functionBody(noNulls(body)), []);
+};
+
+export const callFn = (callee, args): CallExpression => {
+  return e.callExpression(isString(callee) ? e.identifier(callee) : callee, args || []);
+};
 
 export const buildBeforeEach = (propDefs) => {
   const mocks = propDefs.map((p) => {
@@ -127,16 +134,12 @@ export const assign = (left, right): AssignmentExpression => {
   return e.assignmentExpression('=', left, right);
 };
 
-export const arrow = (...body): ArrowFunctionExpression => {
-  return e.arrowFunctionExpression(e.functionBody(noNulls(body)), []);
+export const fnArgs = (args, ...rest): FunctionExpression => {
+  return e.functionExpression(args, e.functionBody(noNulls(rest)));
 };
 
 export const fn = (...body) => {
   return fnArgs([], body);
-};
-
-export const fnArgs = (args, ...rest): FunctionExpression => {
-  return e.functionExpression(args, e.functionBody(noNulls(rest)));
 };
 
 export const vr = (name, val): VariableDeclaration => {
@@ -149,10 +152,6 @@ export const cnst = (name, val): VariableDeclaration => {
 
 export const lt = (name, val): VariableDeclaration => {
   return e.variableDeclaration([e.variableDeclarator(e.identifier(name), val)], "let");
-};
-
-export const callFn = (callee, args): CallExpression => {
-  return e.callExpression(isString(callee) ? e.identifier(callee) : callee, args || []);
 };
 
 export const raw = e.identifier;

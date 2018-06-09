@@ -1,6 +1,6 @@
 import R from 'ramda';
 
-import e, { ImportDeclaration, Property } from 'estel-estree-builder/generated/es2015';
+import e, { ImportDeclaration } from 'estel-estree-builder/generated/es2015';
 import Result from 'folktale/result';
 import path from 'path';
 
@@ -21,35 +21,6 @@ import {
 } from './tree-builders';
 import { Position } from './types';
 
-export const generateComponent = (inputText: string, point: Position, sourcePath: string) => {
-  const tree = parse(inputText);
-  printNode(tree);
-  const jsxBlock = searchByLocationAndType(
-    tree,
-    point,
-    'JSXElement');
-
-  if (!jsxBlock) { throw new Error(`Could not locate a JSX snippet near point ${point}`); }
-
-  const jsxOpening = jsxBlock.openingElement;
-  const componentName = jsxOpening.name.name;
-
-  const componentDefinitionCode = generateComponents(jsxOpening);
-
-  return componentDefinitionCode.map((c) => {
-    const changesToCaller = importNewComponent(tree.body, componentName, sourcePath);
-    const importStmts = generateImports(componentName);
-    const ast = importStmts.concat(c);
-
-    return ComponentGeneration({
-      ast,
-      changesToCaller,
-      componentName,
-      content: genJsList(ast),
-    });
-  });
-};
-
 export const generateImports = (componentName) => {
   const namedImports = {
     react: ['Component'],
@@ -61,6 +32,34 @@ export const generateImports = (componentName) => {
   defaultImports[`./${componentName}.scss`] = 'styles';
 
   return buildImportStmts([namedImports], [defaultImports]);
+};
+
+const generateProps = (className: string, attributeNodes: any[]) => {
+  const objProps = attributeNodes.map((a) => {
+    return e.property(
+      e.identifier(a.name.name),
+      dot(dot(e.identifier('PropTypes'), 'object'), 'isRequired'),
+      'init');
+  });
+  return assign(dot(e.identifier(className), 'propTypes'), e.objectExpression(objProps));
+};
+
+const generateRender = (className: string, attributeNodes: Node[]) => {
+  const propVars = attributeNodes.map((a: Node) => {
+    const propName = e.identifier(R.path<string>(['name', 'name'], a));
+    return e.property(propName, propName, "init", false, true);
+  });
+  const objPattern = e.objectPattern(propVars);
+  const thisDotProps = dot(e.thisExpression(), 'props');
+  return fnArgs(
+    [],
+    e.variableDeclaration([e.variableDeclarator(objPattern, thisDotProps)], 'const'),
+    e.returnStatement(e.identifier(`(
+      <div>
+        Here is a '${className}'
+      </div>
+    )`)),
+  );
 };
 
 export const generateComponents = (jsxNode: any) => {
@@ -100,33 +99,33 @@ export const importNewComponent = (nodes: ImportDeclaration[], compName: string,
   } else {
     return [{ lineNumber: 0, content: newImportStmt }];
   }
-
 };
 
-const generateRender = (className: string, attributeNodes: Node[]) => {
-  const propVars = attributeNodes.map((a: Node) => {
-    const propName = e.identifier(R.path<string>(['name', 'name'], a));
-    return e.property(propName, propName, "init", false, true);
-  });
-  const objPattern = e.objectPattern(propVars);
-  const thisDotProps = dot(e.thisExpression(), 'props');
-  return fnArgs(
-    [],
-    e.variableDeclaration([e.variableDeclarator(objPattern, thisDotProps)], 'const'),
-    e.returnStatement(e.identifier(`(
-      <div>
-        Here is a '${className}'
-      </div>
-    )`)),
-  );
-};
+export const generateComponent = (inputText: string, point: Position, sourcePath: string) => {
+  const tree = parse(inputText);
+  printNode(tree);
+  const jsxBlock = searchByLocationAndType(
+    tree,
+    point,
+    'JSXElement');
 
-const generateProps = (className: string, attributeNodes: any[]) => {
-  const objProps = attributeNodes.map((a) => {
-    return e.property(
-      e.identifier(a.name.name),
-      dot(dot(e.identifier('PropTypes'), 'object'), 'isRequired'),
-      'init');
+  if (!jsxBlock) { throw new Error(`Could not locate a JSX snippet near point ${point}`); }
+
+  const jsxOpening = jsxBlock.openingElement;
+  const componentName = jsxOpening.name.name;
+
+  const componentDefinitionCode = generateComponents(jsxOpening);
+
+  return componentDefinitionCode.map((c) => {
+    const changesToCaller = importNewComponent(tree.body, componentName, sourcePath);
+    const importStmts = generateImports(componentName);
+    const ast = importStmts.concat(c);
+
+    return ComponentGeneration({
+      ast,
+      changesToCaller,
+      componentName,
+      content: genJsList(ast),
+    });
   });
-  return assign(dot(e.identifier(className), 'propTypes'), e.objectExpression(objProps));
 };
