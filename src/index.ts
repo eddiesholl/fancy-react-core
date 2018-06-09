@@ -8,10 +8,6 @@ const fs = require("fs");
 const path = require("path");
 const mkdirp = require("mkdirp");
 
-const { generateComponent } = require("./react-content");
-
-export const baz = () => { return; };
-
 export class Formatter implements IFormatter {
   private ide: IIDE;
   private linter;
@@ -63,37 +59,4 @@ export class FileSystem implements IFileSystem {
 export const fancyReactSettings: string[] =
     ["testStructure", "packagePath", "sourcePath", "testPath", "testSuffix"];
 
-export const generate = ( { fileSystem, formatter, ide, project }: IState) => {
-  const editor = ide.getEditor();
-  const inputText = editor.getText();
-  const cursorPosition = editor.getCursorPosition();
-
-  const result = generateComponent(inputText, cursorPosition, project.sourcePath);
-
-  result.matchWith({
-    Error: ({ value }) => ide.log(`Component generation failed: ${value}`),
-    Ok: ({ value }) => {
-      const componentDetails = project.componentDetails(value.componentName);
-
-      fileSystem.createComponent(componentDetails);
-
-      if (value.changesToCaller) {
-        value.changesToCaller.forEach((change, ix) => {
-          // editor.setCursorScreenPosition(
-          //   { row: change.lineNumber + ix - 1, column: 0 });
-          // editor.insertNewline();
-          // editor.moveUp(1);
-          editor.insertText({line: change.lineNumber + ix - 1, character: 0}, change.content);
-          // editor.insertText(change.content);
-        });
-      }
-      ide.open(componentDetails.componentPath).then((newEditor) => {
-        const formattedContent = formatter.format(
-          value.content,
-          componentDetails.componentPath,
-        );
-        newEditor.setText(formattedContent);
-      });
-    },
-  });
-};
+export * from './actions';

@@ -34,13 +34,6 @@ export interface FancyReactSettings {
   testSuffix: MaybeSettingValue;
 }
 
-// export declare class Formatter {
-//   private ide;
-//   private linter;
-//   constructor(project: Project, ide: IIDE);
-//   format(text: any, fileName: any): any;
-// }
-
 export interface IState {
   ide: IIDE;
   project: Project;
