@@ -1,9 +1,19 @@
 const { parse } = require('./acorn');
 
 describe('parse', () => {
-  it('handles empty input', () => {
-    expect(parse('')).toEqual({
-      comments: []
+  describe('handling empty input', () => {
+    let output
+
+    beforeEach(() => {
+      output = parse('')
+    })
+
+    it('get no comments', () => {
+      expect(output.comments).toEqual([])
+    })
+
+    it('gets no body', () => {
+      expect(output.body).toEqual([])
     })
   })
 })
