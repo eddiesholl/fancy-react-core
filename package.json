@@ -10,6 +10,7 @@
   "scripts": {
     "test": "jest",
     "compile": "tsc && cp src/types.d.ts lib",
+    "prepublishOnly": "npm run compile",
     "build": "tsc",
     "build:watch": "tsc -w",
     "type-check": "tsc"
