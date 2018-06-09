@@ -106,7 +106,7 @@ export const importNewComponent = (nodes: ImportDeclaration[], compName: string,
 const generateRender = (className: string, attributeNodes: Node[]) => {
   const propVars = attributeNodes.map((a: Node) => {
     const propName = e.identifier(R.path<string>(['name', 'name'], a));
-    return e.property(propName, propName, "init");
+    return e.property(propName, propName, "init", false, true);
   });
   const objPattern = e.objectPattern(propVars);
   const thisDotProps = dot(e.thisExpression(), 'props');
@@ -123,7 +123,10 @@ const generateRender = (className: string, attributeNodes: Node[]) => {
 
 const generateProps = (className: string, attributeNodes: any[]) => {
   const objProps = attributeNodes.map((a) => {
-    return e.property(e.identifier(a.name.name), dot(dot(e.identifier('PropTypes'), 'object'), 'isRequired'), 'init');
+    return e.property(
+      e.identifier(a.name.name),
+      dot(dot(e.identifier('PropTypes'), 'object'), 'isRequired'),
+      'init');
   });
   return assign(dot(e.identifier(className), 'propTypes'), e.objectExpression(objProps));
 };
