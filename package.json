@@ -30,13 +30,36 @@
     "url": "https://github.com/eddiesholl/fancy-react-core/issues"
   },
   "homepage": "https://github.com/eddiesholl/fancy-react-core#readme",
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "tsConfigFile": "tsconfig-jest.json",
+        "useBabelRc": true
+      }
+    },
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
+  },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.42",
     "@babel/core": "^7.0.0-beta.42",
     "@babel/preset-env": "^7.0.0-beta.42",
     "@babel/preset-typescript": "^7.0.0-beta.42",
+    "@types/jest": "^23.0.0",
     "@types/node": "^10.3.0",
     "jest": "^23.1.0",
+    "sax": "^1.2.4",
+    "ts-jest": "^22.4.6",
     "tslint": "^5.10.0",
     "typescript": "^2.9.1"
   },

@@ -12,7 +12,7 @@ const defaultAcornOptions = {
   sourceType: 'module',
 };
 
-export const parse = (input) => {
+export const parse = (input: string) => {
   const comments = [];
   const tokens = [];
   const result = acorn.parse(
