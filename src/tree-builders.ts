@@ -38,8 +38,7 @@ const s6 = space(6);
 const s8 = space(8);
 const propPad = `\n${s8}`;
 
-export const buildRenderFunc = (name, propTypes): Function => { // tslint:disable-line
-  propTypes = propTypes || [];
+export const buildRenderFunc = (name, propTypes = []): Function => { // tslint:disable-line
   const propAssigns = propTypes.map((p) => {
     return `${p.propName}={${p.mockName}}`;
   }).join(propPad);
@@ -150,7 +149,7 @@ export const cnst = (name, val): VariableDeclaration => {
   return e.variableDeclaration([e.variableDeclarator(e.identifier(name), val)], "const");
 };
 
-export const lt = (name, val): VariableDeclaration => {
+export const lt = (name, val = undefined): VariableDeclaration => {
   return e.variableDeclaration([e.variableDeclarator(e.identifier(name), val)], "let");
 };
 

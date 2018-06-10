@@ -14,6 +14,8 @@ export interface Project {
   srcInsideProject: string;
   testInsideProject: string;
   componentDetails: (name: string) => ComponentDetails;
+  sourceFileToTestFile: (name: string) => string;
+  sourceFileToModulePath: (name: string) => string;
 }
 
 export interface ComponentDetails {
@@ -75,6 +77,7 @@ export type Position = {
 
 export interface IEditor {
   getText: () => string;
+  getFilePath: () => string;
   getCursorPosition: () => Position;
   insertText: (position: Position, newText: string) => Promise<boolean>;
   setText: (text: string) => void;

@@ -1,6 +1,7 @@
 /* tslint:disable:max-classes-per-file */
 import { ComponentDetails, IFileSystem, IIDE, IState, Project } from "./types";
 const { generateComponent } = require("./react-content");
+const testContent = require('./test-content');
 
 export const generate = ( { fileSystem, formatter, ide, project }: IState) => {
   const editor = ide.getEditor();
@@ -38,5 +39,24 @@ export const generate = ( { fileSystem, formatter, ide, project }: IState) => {
 };
 
 export const tests = ({ fileSystem, formatter, ide, project }: IState) => {
-  return;
+    const activeEditor = ide.getEditor();
+
+    const inputFilePath = activeEditor.getFilePath();
+    const inputText = activeEditor.getText();
+    const testFilePath = project.sourceFileToTestFile(inputFilePath);
+    const inputModulePath = project.sourceFileToModulePath(inputFilePath);
+
+    fileSystem.ensureFolderExists(testFilePath);
+
+    ide.open(testFilePath).then((editor) => {
+      const existingText = editor.getText();
+      const generatedTests = testContent.generate(inputText, existingText, inputModulePath);
+
+      // initModulePaths(this.config.projectRoot);
+
+      const formattedContent = formatter.format(
+        generatedTests.content,
+        testFilePath);
+      editor.setText(formattedContent);
+    });
 };
