@@ -9,11 +9,13 @@ export class Formatter implements IFormatter {
   constructor(project: Project, ide: IIDE) {
     this.ide = ide;
 
-    const eslintDep = R.path(['dependencies', 'eslint'], project.pkgJson);
-    const eslintDevDep = R.path(['devDependencies', 'eslint'], project.pkgJson);
+    const pkgJson = ide.getPkgJson();
+
+    const eslintDep = R.path(['dependencies', 'eslint'], pkgJson);
+    const eslintDevDep = R.path(['devDependencies', 'eslint'], pkgJson);
 
     if (eslintDep || eslintDevDep) {
-      this.linter = new Eslinter(project.projectRoot);
+      this.linter = new Eslinter(ide.getProjectRoot());
     }
   }
 

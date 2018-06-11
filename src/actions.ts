@@ -3,12 +3,12 @@ import { ComponentDetails, IFileSystem, IIDE, IState, Project } from "./types";
 const { generateComponent } = require("./react-content");
 const testContent = require('./test-content');
 
-export const generate = ( { fileSystem, formatter, ide, project }: IState) => {
+export const generate = ( { fileSystem, formatter, ide, project, settings }: IState) => {
   const editor = ide.getEditor();
   const inputText = editor.getText();
   const cursorPosition = editor.getCursorPosition();
 
-  const result = generateComponent(inputText, cursorPosition, project.sourcePath);
+  const result = generateComponent(inputText, cursorPosition, settings.sourcePath);
 
   result.matchWith({
     Error: ({ value }) => ide.log(`Component generation failed: ${value}`),

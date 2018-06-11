@@ -1,6 +1,6 @@
 import R from 'ramda';
 
-import e, { ImportDeclaration } from 'estel-estree-builder/generated/es2015';
+import e, { ImportDeclaration, Node } from 'estel-estree-builder/generated/es2015';
 import Result from 'folktale/result';
 import path from 'path';
 

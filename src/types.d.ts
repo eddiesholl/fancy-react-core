@@ -4,12 +4,6 @@ export * from './index';
 export type TestStructure = "ParallelDirs" | "SameDir" | "SubDir";
 
 export interface Project {
-  packagePath: string;
-  sourcePath: string;
-  testPath: string;
-  testStructure: TestStructure;
-  testSuffix: string;
-  pkgJson: any;
   projectRoot: string;
   srcInsideProject: string;
   testInsideProject: string;
@@ -27,18 +21,23 @@ export interface ComponentDetails {
 }
 
 export declare const fancyReactSettingsKeys: Array<string>;
+
+export type PkgJson = any;
 type MaybeSettingValue = string | undefined;
 export interface FancyReactSettings {
-  packagePath: MaybeSettingValue;
-  sourcePath: MaybeSettingValue;
-  testPath: MaybeSettingValue;
-  testStructure: MaybeSettingValue;
-  testSuffix: MaybeSettingValue;
+  packagePath: string;
+  projectRoot: string;
+  sourcePath: string;
+  testPath: string;
+  testStructure: TestStructure;
+  testSuffix: string;
+  pkgJson: PkgJson;
 }
 
 export interface IState {
   ide: IIDE;
   project: Project;
+  settings: FancyReactSettings;
   fileSystem: IFileSystem;
   formatter: Formatter;
 }
@@ -47,6 +46,9 @@ export interface IIDE {
   log: (msg: string) => void;
   getEditor: () => IEditor;
   open: (filePath: string) => Promise<IEditor>;
+  getSetting: (name: string) => MaybeSettingValue;
+  getPkgJson: () => PkgJson;
+  getProjectRoot: () => string;
 }
 
 export interface IFileSystem {
