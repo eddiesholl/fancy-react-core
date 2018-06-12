@@ -3,6 +3,7 @@ import e, {
   AssignmentExpression,
   CallExpression,
   Class,
+  Expression,
   Function,
   FunctionExpression,
   Identifier,
@@ -44,7 +45,8 @@ export const buildRenderFunc = (name, propTypes = []): Function => { // tslint:d
   }).join(propPad);
   const propAssignsWithPad = propAssigns ? `${propPad}${propAssigns}${propPad}` : ' ';
 
-  return e.function(
+  return e.functionDeclaration(
+    e.identifier('renderComponent'),
     [e.identifier('props')],
     e.functionBody([
       e.assignmentExpression(
@@ -58,13 +60,13 @@ export const buildRenderFunc = (name, propTypes = []): Function => { // tslint:d
           [e.identifier(`
 ${s6}<${name}${propAssignsWithPad}{...props} />`)])),
     ]),
-    'renderComponent');
+  );
 };
 
-export const buildItBlock = (desc, body) => {
+export const buildItBlock = (desc, expressions: Expression[]) => {
   return callFn(
     'it',
-    [e.literal(desc), e.arrowFunctionExpression(body, [])]);
+    [e.literal(desc), e.arrowFunctionExpression(e.functionBody(expressions), [])]);
 };
 
 export const buildClass = (className: string, superClass: string, methods): Class => {

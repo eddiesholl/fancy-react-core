@@ -1,4 +1,6 @@
 /* tslint:disable:max-classes-per-file */
+const path = require('path');
+
 import { ComponentDetails, IFileSystem, IIDE, IState, Project } from "./types";
 const { generateComponent } = require("./react-content");
 const testContent = require('./test-content');
@@ -38,25 +40,39 @@ export const generate = ( { fileSystem, formatter, ide, project, settings }: ISt
   });
 };
 
-export const tests = ({ fileSystem, formatter, ide, project }: IState) => {
-    const activeEditor = ide.getEditor();
+export const tests = ({ fileSystem, formatter, ide, project, settings }: IState) => {
+  const activeEditor = ide.getEditor();
 
-    const inputFilePath = activeEditor.getFilePath();
-    const inputText = activeEditor.getText();
-    const testFilePath = project.sourceFileToTestFile(inputFilePath);
-    const inputModulePath = project.sourceFileToModulePath(inputFilePath);
+  const inputFilePath = activeEditor.getFilePath();
+  const inputText = activeEditor.getText();
 
-    fileSystem.ensureFolderExists(testFilePath);
+  const sourceFileWithinProject = project.fullPathToProjectPath(inputFilePath);
 
-    ide.open(testFilePath).then((editor) => {
-      const existingText = editor.getText();
-      const generatedTests = testContent.generate(inputText, existingText, inputModulePath);
+  if (!sourceFileWithinProject.startsWith(project.srcInsideProject)) {
+    throw new Error(`Source file ${sourceFileWithinProject} not inside src folder ${project.srcInsideProject}`);
+  }
 
-      // initModulePaths(this.config.projectRoot);
+  const testFilePath = path.join(
+    settings.projectRoot,
+    project.sourceFileWPToTestFileWP(sourceFileWithinProject));
 
-      const formattedContent = formatter.format(
-        generatedTests.content,
-        testFilePath);
-      editor.setText(formattedContent);
-    });
+  const inputModulePath = project.sourceFileToModulePath(inputFilePath);
+
+  fileSystem.ensureFileExists(testFilePath);
+
+  ide.open(testFilePath).then((editor) => {
+    const existingText = editor.getText();
+
+    // initModulePaths(this.config.projectRoot);
+
+    const generatedTests = testContent.generate(inputText, existingText, inputModulePath);
+    const formattedContent = formatter.format(
+      generatedTests.content,
+      testFilePath);
+
+    editor.setText(formattedContent);
+  })
+  .catch((e) => {
+    ide.log(`Failed to open test file ${testFilePath}: ${e}`);
+  });
 };

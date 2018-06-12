@@ -39,16 +39,11 @@ const nodesToDescend = [
 interface ISearchOptions { lower: boolean; }
 
 export const searchBy = (currentNode, tester, options: ISearchOptions = { lower: false }) => {
-  const currentTesterResult = tester(currentNode);
-  let currentResult;
-  if (currentTesterResult) {
-    // allow testers to return a 'lookahead' node match
-    currentResult = (currentTesterResult === true)
-      ? currentNode
-      : currentTesterResult;
-  }
+  if (!currentNode) { return; }
 
+  let currentResult;
   let lowerResult;
+
   if (Array.isArray(currentNode)) {
     lowerResult = firstVal(
       currentNode
@@ -56,6 +51,14 @@ export const searchBy = (currentNode, tester, options: ISearchOptions = { lower:
           return searchBy(n, tester, options);
         }));
   } else {
+    const currentTesterResult = tester(currentNode);
+    if (currentTesterResult) {
+      // allow testers to return a 'lookahead' node match
+      currentResult = (currentTesterResult === true)
+        ? currentNode
+        : currentTesterResult;
+    }
+
     lowerResult = firstVal(
       nodesToDescend.map((s) => {
         const nextDescent = currentNode[s];
@@ -109,8 +112,8 @@ export const searchForPropTypes = (node, componentName) => {
       const propName = left.property.name;
 
       if (subjectName === componentName && propName === 'propTypes') {
-        const isRightObject = byType('ObjectExpression')(node.right);
-        return isRightObject && node.right.properties;
+        const isRightObject = byType('ObjectExpression')(n.right);
+        return isRightObject && n.right.properties;
       }
     }
   };
@@ -131,9 +134,7 @@ export const searchForPropTypes = (node, componentName) => {
 };
 
 export const searchByIdName = (node, idName) => {
-  const tester = (n) => {
-    return n && node.id && node.id.name === idName;
-  };
+  const tester = R.pathEq(['id', 'name'], idName);
   return searchBy(node, tester);
 };
 

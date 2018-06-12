@@ -1,13 +1,22 @@
 /* tslint:disable:max-classes-per-file */
 
-import { ComponentDetails, FancyReactSettings, IFileSystem, IFormatter, IIDE, Project } from "./types";
 const R = require('ramda');
-
 const fs = require("fs");
 const path = require("path");
 const mkdirp = require("mkdirp");
 
 import { Eslinter } from './eslint';
+import { getTestFuncs } from './test-structure/factory';
+import {
+  ComponentDetails,
+  FancyReactSettings,
+  IFileSystem,
+  IFormatter,
+  IIDE,
+  Project,
+  ProjectFuncs,
+  ProjectPaths,
+} from "./types";
 const { removeExtension } = require('./path-helpers');
 
 export const getSettings = (ide: IIDE): FancyReactSettings => {
@@ -29,13 +38,20 @@ export const getSettings = (ide: IIDE): FancyReactSettings => {
   };
 };
 
-export const getProject = (settings: FancyReactSettings): Project => {
+const getProjectPaths = (settings: FancyReactSettings): ProjectPaths => {
+  return {
+    projectRoot: settings.projectRoot,
+    srcInsideProject: path.join('/' + settings.packagePath, settings.sourcePath),
+    testInsideProject: path.join('/' + settings.packagePath, settings.testPath),
+  };
+};
 
-  const srcInsideProject = path.join('/' + settings.packagePath, settings.sourcePath);
+const getProjectFuncs = (projectPaths: ProjectPaths, settings: FancyReactSettings): ProjectFuncs => {
+  const { packagePath, projectRoot, sourcePath } = settings;
+  const { srcInsideProject } = projectPaths;
 
   const componentDetails = (componentName: string) => {
-    const folderPath =
-      `${settings.projectRoot}/${settings.packagePath}/${settings.sourcePath}/components/${componentName}`;
+    const folderPath = `${projectRoot}/${packagePath}/${sourcePath}/components/${componentName}`;
     const componentPath = `${folderPath}/${componentName}.js`;
     const stylesPath = `${folderPath}/${componentName}.scss`;
 
@@ -43,7 +59,7 @@ export const getProject = (settings: FancyReactSettings): Project => {
       componentName,
       componentPath,
       folderPath,
-      projectRoot: settings.projectRoot,
+      projectRoot,
       stylesPath,
     };
   };
@@ -54,18 +70,6 @@ export const getProject = (settings: FancyReactSettings): Project => {
     }
 
     return sourceFile.slice(settings.projectRoot.length);
-  };
-
-  const sourceFileToTestFile = (sourceFile: string) => {
-    const sourceFileWithinProject = fullPathToProjectPath(sourceFile);
-
-    if (!sourceFileWithinProject.startsWith(srcInsideProject)) {
-      throw new Error(`Source file ${sourceFileWithinProject} not inside src folder ${srcInsideProject}`);
-    }
-
-    return path.join(
-      settings.projectRoot,
-      testStructureFuncs.sourceFileWPToTestFileWP(sourceFileWithinProject));
   };
 
   const sourcePathWithinSrc = (sourceFileWithinProject: string) => {
@@ -79,11 +83,51 @@ export const getProject = (settings: FancyReactSettings): Project => {
 
   return {
     componentDetails,
+    fullPathToProjectPath,
+    sourceFileToModulePath,
+    sourcePathWithinSrc,
+  };
+};
+
+export const getProject = (settings: FancyReactSettings): Project => {
+  const projectPaths = getProjectPaths(settings);
+  const { srcInsideProject, testInsideProject } = projectPaths;
+
+  const projectFuncs = getProjectFuncs(projectPaths, settings);
+  const {
+    componentDetails,
+    fullPathToProjectPath,
+    sourceFileToModulePath,
+    sourcePathWithinSrc,
+  } = projectFuncs;
+
+  const testFuncs = getTestFuncs(projectFuncs, projectPaths, settings);
+  const { sourceFileWPToTestFileWP, isPathWPTestFile, testFileWPToSourceFileWP } = testFuncs;
+
+  const sourceFileToTestFile = (sourceFile: string) => {
+    const sourceFileWithinProject = fullPathToProjectPath(sourceFile);
+
+    if (!sourceFileWithinProject.startsWith(srcInsideProject)) {
+      throw new Error(`Source file ${sourceFileWithinProject} not inside src folder ${srcInsideProject}`);
+    }
+
+    return path.join(
+      settings.projectRoot,
+      sourceFileWPToTestFileWP(sourceFileWithinProject));
+  };
+
+  return {
+    componentDetails,
+    fullPathToProjectPath,
+    isPathWPTestFile,
     projectRoot: settings.projectRoot,
     sourceFileToModulePath,
     sourceFileToTestFile,
-    srcInsideProject: path.join('/' + settings.packagePath, settings.sourcePath),
-    testInsideProject: path.join('/' + settings.packagePath, settings.testPath),
+    sourceFileWPToTestFileWP,
+    sourcePathWithinSrc,
+    srcInsideProject,
+    testFileWPToSourceFileWP,
+    testInsideProject,
   };
 };
 

@@ -11,6 +11,7 @@
     "test": "jest",
     "compile": "tsc && cp src/types.d.ts lib",
     "lint": "tslint -p ./",
+    "lint:fix": "tslint -p ./ --fix",
     "prepublishOnly": "npm run lint && npm run compile",
     "build": "tsc",
     "build:watch": "tsc -w",

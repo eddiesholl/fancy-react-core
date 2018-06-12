@@ -3,13 +3,26 @@ export * from './index';
 
 export type TestStructure = "ParallelDirs" | "SameDir" | "SubDir";
 
-export interface Project {
+export interface ProjectPaths {
   projectRoot: string;
   srcInsideProject: string;
   testInsideProject: string;
+}
+
+export interface ProjectFuncs {
+  fullPathToProjectPath: (sourceFile: string) => string;
   componentDetails: (name: string) => ComponentDetails;
-  sourceFileToTestFile: (name: string) => string;
   sourceFileToModulePath: (name: string) => string;
+  sourcePathWithinSrc: (testFilePath: string) => string;
+}
+
+export interface TestFuncs {
+  sourceFileWPToTestFileWP: (sourceFileWithinProject: string) => string;
+  isPathWPTestFile: (filePath: string) => boolean;
+  testFileWPToSourceFileWP: (testFilePath: string) => string;
+}
+export interface Project extends ProjectFuncs, ProjectPaths, TestFuncs {
+  sourceFileToTestFile: (name: string) => string;
 }
 
 export interface ComponentDetails {

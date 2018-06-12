@@ -1,4 +1,4 @@
-const e = require('estree-builder');
+import e from 'estel-estree-builder/generated/es2015';
 const R = require('ramda');
 
 import { parse } from './acorn';
@@ -9,6 +9,7 @@ import {
   buildItBlock,
   buildRenderFunc,
   callFn,
+  cnst,
   dot,
   lt,
 } from './tree-builders';
@@ -34,13 +35,13 @@ export const letForPropTypes = (propDefs) => {
   }
 };
 
-export const jestMockFn = callFn(dot(e.id('jest'), 'fn'), []);
-const stringMock = (n) => e.string(n + 'MockValue');
+export const jestMockFn = callFn(dot(e.identifier('jest'), 'fn'), []);
+const stringMock = (n) => e.literal(n + 'MockValue');
 
 export const propTypeToMock = {
   func: () => jestMockFn,
-  number: () => e.number(1),
-  object: () => e.object(),
+  number: () => e.literal(1),
+  object: () => e.objectExpression([]),
 };
 
 const propTypeMockName = (name, type) => {
@@ -78,21 +79,21 @@ export const processPropTypes = (propDefs) => {
 const buildSuiteForClassBased = (classComponentNode, builderOptions, allNodes) => {
   // allNodes.map(n => printNode(n))
   const className = varDecName(classComponentNode);
-  const generateResult = e.const(
+  const generateResult = cnst(
     'result',
     callFn('renderComponent', []));
-  const expectResult = callFn('expect', [e.id('result')]);
+  const expectResult = callFn('expect', [e.identifier('result')]);
   const checkResult = callFn(
-    dot(dot(dot(expectResult, 'to'), 'deep'), 'equal'), [e.id('result')]);
+    dot(dot(dot(expectResult, 'to'), 'deep'), 'equal'), [e.identifier('result')]);
 
   const propTypes = searchForPropTypes(allNodes, className);
   const propTypeOutputs = processPropTypes(propTypes);
   const beforeEach = buildBeforeEach(propTypeOutputs);
 
-  const suite = e.call(
+  const suite = callFn(
     e.identifier('describe'),
     [
-      e.string(`render ${className}`),
+      e.literal(`render ${className}`),
       arrow(
         ...letForPropTypes(propTypeOutputs),
         beforeEach,
@@ -114,15 +115,15 @@ const buildSuiteForClassBased = (classComponentNode, builderOptions, allNodes) =
 };
 
 const buildSuiteForJsx = (exportNode, { exportName }) => {
-  const generateResult = e.const('result', callFn('renderComponent', [e.id(exportName)]));
-  const expectResult = callFn('expect', [e.id('result')]);
+  const generateResult = cnst('result', callFn('renderComponent', [e.identifier(exportName)]));
+  const expectResult = callFn('expect', [e.identifier('result')]);
   const checkResult = callFn(
-    dot(dot(expectResult, 'to'), 'deepEqual'), [e.id('result')]);
+    dot(dot(expectResult, 'to'), 'deepEqual'), [e.identifier('result')]);
 
-  const suite = e.call(
-    e.identifier('describe'),
+  const suite = callFn(
+    'describe',
     [
-      e.string(`render ${exportName}`),
+      e.literal(`render ${exportName}`),
       arrow(
         buildRenderFunc(exportName),
         buildItBlock('can render', [generateResult, checkResult])),
@@ -135,11 +136,23 @@ const buildSuiteForJsx = (exportNode, { exportName }) => {
 };
 
 const buildSuiteForMapStateToProps = (exportNode, { exportName }) => {
-  const suite = e.call(
-    e.identifier('describe'),
+  const suite = callFn(
+    'describe',
     [
-      e.string(exportName),
-      e.function([], [e.const('result', callFn(exportName, [e.identifier('state')]))]),
+      e.literal(exportName),
+      e.function(
+        [],
+        e.functionBody(
+          [cnst(
+            'result',
+            callFn(
+              exportName,
+              [e.identifier('state')],
+            ),
+          )],
+        ),
+        'foo-function',
+      ),
     ]);
 
   return {
@@ -149,15 +162,15 @@ const buildSuiteForMapStateToProps = (exportNode, { exportName }) => {
 };
 
 const buildSuiteForBasicFunc = (exportNode, { exportName }) => {
-  const generateResult = e.const('result', callFn(exportName, []));
-  const expectResult = callFn('expect', [e.id('result')]);
+  const generateResult = cnst('result', callFn(exportName, []));
+  const expectResult = callFn('expect', [e.identifier('result')]);
   const checkResult = callFn(
-    dot(dot(expectResult, 'to'), 'deepEqual'), [e('object-raw', [])]);
+    dot(dot(expectResult, 'to'), 'deepEqual'), [e.objectExpression([])]);
 
-  const suite = e.call(
-    e.identifier('describe'),
+  const suite = callFn(
+    'describe',
     [
-      e.string(exportName),
+      e.literal(exportName),
       arrow(buildItBlock('works', [generateResult, checkResult])),
     ]);
 
@@ -200,7 +213,7 @@ const buildSuiteFor = (exportNode, allNodes, inputModulePath) => {
   // printNode(exportNode, 0)
   const varDec = searchByType(declaringNode, "VariableDeclarator");
   const classComponentNode = searchBySuperClass(declaringNode, "Component");
-  const exportName = varDecName(varDec || classComponentNode);
+  const exportName = varDecName(classComponentNode || varDec);
   const hasJsx = searchByType(declaringNode, "JSXElement");
 
   const builderOptions = {
