@@ -1,3 +1,7 @@
+## 2.1.0
+
+* Support for 'switch' action, to jump between a source and it's test file, and back
+
 ## 2.0.0
 
 * Breaking change - changes to IDE and State interfaces
