@@ -22,7 +22,9 @@ export interface TestFuncs {
   testFileWPToSourceFileWP: (testFilePath: string) => string;
 }
 export interface Project extends ProjectFuncs, ProjectPaths, TestFuncs {
+  isPathTestFile: (name: string) => boolean;
   sourceFileToTestFile: (name: string) => string;
+  testFileToSourceFile: (name: string) => string;
 }
 
 export interface ComponentDetails {

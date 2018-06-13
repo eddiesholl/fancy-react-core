@@ -1,5 +1,6 @@
 /* tslint:disable:max-classes-per-file */
 const path = require('path');
+const fs = require('fs');
 
 import { ComponentDetails, IFileSystem, IIDE, IState, Project } from "./types";
 const { generateComponent } = require("./react-content");
@@ -75,4 +76,28 @@ export const tests = ({ fileSystem, formatter, ide, project, settings }: IState)
   .catch((e) => {
     ide.log(`Failed to open test file ${testFilePath}: ${e}`);
   });
+};
+
+export const switchFiles = ({ fileSystem, formatter, ide, project, settings }: IState) => {
+  const currentFilePath = ide.getEditor().getFilePath();
+  const isCurrentFileTest = project.isPathTestFile(currentFilePath);
+
+  if (isCurrentFileTest) {
+    const sourceFilePath = project.testFileToSourceFile(currentFilePath);
+
+    if (fs.existsSync(sourceFilePath)) {
+      ide.open(sourceFilePath);
+    } else {
+      ide.log(`The source file ${sourceFilePath} doesn't seem to exist :(`);
+    }
+  } else {
+    const testFilePath = project.sourceFileToTestFile(currentFilePath);
+
+    if (fs.existsSync(testFilePath)) {
+      ide.open(testFilePath);
+    } else {
+      // TODO We could generate here
+      ide.log(`The test file ${testFilePath} doesn't seem to exist :(`);
+    }
+  }
 };

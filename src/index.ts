@@ -90,6 +90,7 @@ const getProjectFuncs = (projectPaths: ProjectPaths, settings: FancyReactSetting
 };
 
 export const getProject = (settings: FancyReactSettings): Project => {
+  const { projectRoot } = settings;
   const projectPaths = getProjectPaths(settings);
   const { srcInsideProject, testInsideProject } = projectPaths;
 
@@ -104,7 +105,23 @@ export const getProject = (settings: FancyReactSettings): Project => {
   const testFuncs = getTestFuncs(projectFuncs, projectPaths, settings);
   const { sourceFileWPToTestFileWP, isPathWPTestFile, testFileWPToSourceFileWP } = testFuncs;
 
-  const sourceFileToTestFile = (sourceFile: string) => {
+  const isPathTestFile = (filePath) => {
+    const filePathWithinProject = filePath.startsWith(projectRoot) ?
+      filePath.slice(projectRoot.length) :
+      filePath;
+
+    return isPathWPTestFile(filePathWithinProject);
+  };
+
+  const testFileToSourceFile = (testFile) => {
+    const testFileWithinProject = fullPathToProjectPath(testFile);
+
+    return path.join(
+      projectRoot,
+      testFileWPToSourceFileWP(testFileWithinProject));
+  };
+
+  const sourceFileToTestFile = (sourceFile) => {
     const sourceFileWithinProject = fullPathToProjectPath(sourceFile);
 
     if (!sourceFileWithinProject.startsWith(srcInsideProject)) {
@@ -112,20 +129,22 @@ export const getProject = (settings: FancyReactSettings): Project => {
     }
 
     return path.join(
-      settings.projectRoot,
+      projectRoot,
       sourceFileWPToTestFileWP(sourceFileWithinProject));
   };
 
   return {
     componentDetails,
     fullPathToProjectPath,
+    isPathTestFile,
     isPathWPTestFile,
-    projectRoot: settings.projectRoot,
+    projectRoot,
     sourceFileToModulePath,
     sourceFileToTestFile,
     sourceFileWPToTestFileWP,
     sourcePathWithinSrc,
     srcInsideProject,
+    testFileToSourceFile,
     testFileWPToSourceFileWP,
     testInsideProject,
   };

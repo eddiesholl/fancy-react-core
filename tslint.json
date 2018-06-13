@@ -3,6 +3,7 @@
 	"rules": {
 		"object-literal-key-quotes": false,
 		"quotemark": false,
+		"no-invalid-this": true,
 		"no-string-throw": true,
     "no-use-before-declare": true,
 		"no-unused-expression": true,
