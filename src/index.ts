@@ -194,6 +194,7 @@ export class FileSystem implements IFileSystem {
   }
 
   public ensureFileExists(pathToCheck: string) {
+    this.ensureFolderExists(path.dirname(pathToCheck));
     if (!fs.existsSync(pathToCheck)) {
       fs.closeSync(fs.openSync(pathToCheck, 'w'));
     }
