@@ -1,4 +1,5 @@
 /* tslint:disable:no-console */
+import { ClassDeclaration, Node } from 'estel-estree-builder/generated/es2015';
 import R from 'ramda';
 import { Position } from './types';
 
@@ -93,7 +94,7 @@ export const searchByLocationAndType = (node, point: Position, type: string) => 
   return searchBy(node, (n) => bt(n) && bl(n), { lower: true });
 };
 
-export const searchBySuperClass = (node, superClassName) => {
+export const searchBySuperClass = (node: Node, superClassName: string): ClassDeclaration | undefined => {
   const tester = (n) => {
     const superClass = n.superClass;
     return byType("ClassDeclaration")(n) &&
@@ -102,7 +103,7 @@ export const searchBySuperClass = (node, superClassName) => {
   return searchBy(node, tester);
 };
 
-export const searchForPropTypes = (node, componentName) => {
+export const searchForPropTypes = (node: Node, componentName: string) => {
   const legacyTester = (n) => {
     const isAssignment = byType('AssignmentExpression')(n);
     const left = n.left;
@@ -119,8 +120,7 @@ export const searchForPropTypes = (node, componentName) => {
   };
   const staticPropTypesTester = (n) => {
     return byType('ClassProperty')(n) &&
-      n.static &&
-      n.key && node.key.name === 'propTypes';
+      n.static && R.pathEq(['key', 'name'], 'propTypes', n);
   };
 
   const legacyMatch = searchBy(node, legacyTester);

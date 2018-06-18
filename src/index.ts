@@ -205,3 +205,4 @@ export const fancyReactSettings: string[] =
     ["testStructure", "packagePath", "sourcePath", "testPath", "testSuffix"];
 
 export * from './actions';
+export * from './tree-view';
