@@ -1,3 +1,7 @@
+## 2.1.2
+
+- feature: Basic tools for parsing and caching source files
+
 ## 2.1.1
 
 - fix: make sure folder exists before creating a file
