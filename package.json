@@ -1,6 +1,6 @@
 {
   "name": "fancy-react-core",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Core cross platform library for fancy-react, a set of react developer IDE tools",
   "main": "lib/index.js",
   "files": [
