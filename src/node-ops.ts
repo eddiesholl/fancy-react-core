@@ -5,12 +5,12 @@ import { Position } from './types';
 
 const hasValue = (n) => !!n;
 
-const pointAfter = (p: Position, a) => {
+const pointAfter = (p: Position, a: Position): boolean => {
   return p && a &&
-    ((p.line === a.line && p.character > a.column) || (p.line > a.line));
+    ((p.line === a.line && p.column > a.column) || (p.line > a.line));
 };
 
-const pointWithin = (p: Position, a, b) => {
+const pointWithin = (p: Position, a: Position, b: Position): boolean => {
   return pointAfter(p, a) && pointAfter(b, p);
 };
 
@@ -33,8 +33,8 @@ const firstVal = (a) => {
 };
 const nodesToDescend = [
   'declaration', 'id', 'init', 'body', 'expression',
-  'left', 'right', 'value', 'argument', 'openingElement',
-  'declarations', 'children',
+  'left', 'right', 'value', 'argument', 'openingElement', 'closingElement',
+  'declarations', 'children', 'name',
 ];
 
 interface ISearchOptions { lower: boolean; }
@@ -165,11 +165,22 @@ export const printNode = (node, depth = 0) => {
       node[s].forEach((n) => printNode(n, nextDepth));
     }
   };
-  console.log(pad + node.type + " " + (node.name || node.operator || ''));
+  const start = R.path(['loc', 'start'], node);
+  const end = R.path(['loc', 'end'], node);
 
+  const fmtLoc = (loc) => {
+    return loc && `${loc.line},${loc.column}`;
+  };
+
+  if (node.type) {
+    console.log(`${pad}${node.type} ${node.name || node.operator || ''} ${fmtLoc(start)} ${fmtLoc(end)}`);
+  } else {
+    console.log(`${pad}${JSON.stringify(node)}`)
+  }
   const subs = ['id', 'init', 'body', 'declaration', 'key', 'argument',
     'expression', 'callee', 'object', 'property', 'source', 'local',
-    'left', 'right', 'value'];
+    'left', 'right', 'value', 'name',
+    'openingElement', 'closingElement'];
   subs.forEach(sub);
 
   const iters = ['declarations', 'params', 'properties', 'arguments', 'specifiers'];

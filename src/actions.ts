@@ -11,6 +11,8 @@ export const generate = ( { fileSystem, formatter, ide, project, settings }: ISt
   const inputText = editor.getText();
   const cursorPosition = editor.getCursorPosition();
 
+  // console.log(`Searching from line ${cursorPosition.line} char ${cursorPosition.column}`);
+
   const result = generateComponent(inputText, cursorPosition, settings.sourcePath);
 
   result.matchWith({
@@ -26,7 +28,7 @@ export const generate = ( { fileSystem, formatter, ide, project, settings }: ISt
           //   { row: change.lineNumber + ix - 1, column: 0 });
           // editor.insertNewline();
           // editor.moveUp(1);
-          editor.insertText({line: change.lineNumber + ix - 1, character: 0}, change.content);
+          editor.insertText({line: change.lineNumber + ix - 1, column: 0}, change.content);
           // editor.insertText(change.content);
         });
       }

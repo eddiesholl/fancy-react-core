@@ -89,7 +89,7 @@ export declare class Formatter implements IFormatter {
 
 export type Position = {
   line: number;
-  character: number;
+  column: number;
 }
 
 export interface IEditor {
