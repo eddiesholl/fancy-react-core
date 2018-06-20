@@ -1,4 +1,4 @@
-import { ClassDeclaration, Node, Property } from 'estel-estree-builder/generated/es2015';
+import { ClassDeclaration, Node, Program, Property } from 'estel-estree-builder/generated/es2015';
 const fs = require('fs');
 const path = require('path');
 import R from 'ramda';
@@ -18,8 +18,10 @@ export interface IReactProperty {
   default: any;
 }
 
+export type ParseResult = Program | undefined;
+
 export interface ICachedSourceFile {
-  ast: Node;
+  ast: ParseResult;
   component?: IReactComponent;
   content: string;
   fileName: string;
@@ -34,16 +36,18 @@ const extractProp = (propNode: Property): IReactProperty => {
   };
 };
 
-const extractComponent = (node: Node): IReactComponent | undefined => {
-  const componentClass = searchBySuperClass(node, 'Component');
+const extractComponent = (ast: ParseResult): IReactComponent | undefined => {
+  if (ast === undefined) { return; }
+
+  const componentClass = searchBySuperClass(ast, 'Component');
 
   if (componentClass !== undefined) {
     const className = componentClass.id.name;
-    const props = searchForPropTypes(node, className).map(extractProp);
+    const props = searchForPropTypes(ast, className).map(extractProp);
 
     return {
       componentName: className,
-      definition: node,
+      definition: ast,
       props,
     };
   }
@@ -55,11 +59,19 @@ const processFile = (filePath: string): Promise<ICachedSourceFile> => {
       if (err) {
         reject(err);
       } else {
-        const ast = parse(content);
+        let ast;
+        let component;
+
+        try {
+          ast = parse(content);
+          component = extractComponent(ast);
+        } catch (e) {
+          // console.log(`Could not parse ${filePath}: ${e}`);
+        }
 
         resolve({
           ast,
-          component: extractComponent(ast),
+          component,
           content,
           fileName: path.basename(filePath),
           filePath,
@@ -86,5 +98,9 @@ export class SourceFileCache {
 
       return parsePromise;
     }
+  }
+
+  public clear(filePath: string): void {
+    this.data.delete(filePath);
   }
 }

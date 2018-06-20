@@ -1,6 +1,7 @@
 import acorn = require('acorn');
 import injectAcornJsx from 'acorn-jsx/inject';
 import injectAcornStaticClassPropertyInitializer from 'acorn-static-class-property-initializer/inject';
+import { ParseResult } from './tree-view';
 
 injectAcornJsx(acorn);
 injectAcornStaticClassPropertyInitializer(acorn);
@@ -12,21 +13,26 @@ const defaultAcornOptions = {
   sourceType: 'module',
 };
 
-export const parse = (input: string) => {
+export const parse = (input: string): ParseResult => {
   const comments = [];
   const tokens = [];
-  const result = acorn.parse(
-    input,
-    {
-      ...defaultAcornOptions,
-      onComment: comments,
-      onToken: tokens,
-      ranges: true,
-    });
 
-  return {
-    ...result,
-    comments,
-    tokens,
-  };
+  try {
+    const result = acorn.parse(
+      input,
+      {
+        ...defaultAcornOptions,
+        onComment: comments,
+        onToken: tokens,
+        ranges: true,
+      });
+
+    return {
+      ...result,
+      comments,
+      tokens,
+    };
+  } catch {
+    return undefined;
+  }
 };

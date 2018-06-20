@@ -8,7 +8,7 @@ import { ComponentGeneration } from './tcomb';
 import { validComponentName } from './utils';
 
 import { parse } from './acorn';
-import { printNode, searchByLocationAndType } from './node-ops';
+import { filterByType, printNode, searchByLocationAndType } from './node-ops';
 
 import { genJsList } from './js-gen';
 import {
@@ -79,11 +79,11 @@ export const generateComponents = (jsxNode: any) => {
   return Result.Ok([classDecl, defProps, defExport]);
 };
 
-export const importNewComponent = (nodes: ImportDeclaration[], compName: string, sourcePath: string) => {
+export const importNewComponent = (nodes: Node[], compName: string, sourcePath: string) => {
   const newImportPath = path.join(sourcePath, 'components', compName, compName);
   const newImportStmt = `import ${compName} from '${newImportPath}'`;
 
-  const importNodes = nodes.filter(R.propEq("type", "ImportDeclaration"));
+  const importNodes = filterByType<ImportDeclaration>(nodes, "ImportDeclaration");
   const lastImport = importNodes.slice(-1)[0];
 
   if (lastImport !== undefined) {

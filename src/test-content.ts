@@ -1,7 +1,16 @@
-import e from 'estel-estree-builder/generated/es2015';
-const R = require('ramda');
+import e, { CallExpression } from 'estel-estree-builder/generated/es2015';
+import R from 'ramda';
 
 import { parse } from './acorn';
+import {
+  byType,
+  filterByType,
+  searchByIdName,
+  searchBySuperClass,
+  searchByType,
+  // printNode,
+  searchForPropTypes,
+} from './node-ops';
 import {
   arrow,
   buildBeforeEach,
@@ -13,14 +22,6 @@ import {
   dot,
   lt,
 } from './tree-builders';
-const {
-  searchByType,
-  byType,
-  // printNode,
-  searchBySuperClass,
-  searchForPropTypes,
-  searchByIdName,
-} = require('./node-ops');
 import { noNulls } from './utils';
 
 const { genJs, genJsList } = require('./js-gen');
@@ -240,9 +241,10 @@ const buildSuitesFor = (exportingNodes, allNodes, inputModulePath) => {
   return noNulls(exportingNodes.map((en) => buildSuiteFor(en, allNodes, inputModulePath)));
 };
 
-const bySuiteName = (nodes) => {
+const bySuiteName = (nodes: any[]) => {
   return R.indexBy((n) => n.arguments[0].value, nodes.map((n) => n.suite));
 };
+
 const mergeSuites = (existing, incoming) => {
   const existingByName = bySuiteName(existing);
   const incomingByName = bySuiteName(incoming);
@@ -250,9 +252,9 @@ const mergeSuites = (existing, incoming) => {
   return R.values(R.merge(existingByName, incomingByName));
 };
 
-export const generate = (inputText, existingText, inputModulePath) => {
+export const generate = (inputText: string, existingText, inputModulePath): string => {
 
-  if (!inputText) { return { content: '' }; }
+  if (!inputText) { return ''; }
 
   const inputAST = parse(inputText);
   const inputNodes = inputAST.body;
@@ -268,13 +270,13 @@ export const generate = (inputText, existingText, inputModulePath) => {
   const outputAST = parse(existingText);
   const outputNodes = outputAST.body;
   const existingTopLevelSuites =
-    outputNodes
-      .filter(byType("ExpressionStatement"))
-      .filter(R.pathEq(['expression', 'callee', 'name'], 'describe'))
-      .map((n) => {
+     filterByType<CallExpression>(outputNodes, "CallExpression")
+      .filter(R.pathEq(['callee', 'name'], 'describe'))
+      .map((exp) => {
+        const arg0 = exp.arguments[0];
         return {
-          name: n.expression.arguments[0].value,
-          suite: n.expression,
+          name: R.propOr('mystery describe block', 'value', arg0) as string,
+          suite: exp,
         };
       });
 
@@ -294,10 +296,6 @@ export const generate = (inputText, existingText, inputModulePath) => {
 ${genJsList(importStmts)}
 
 ${namedExportSuites}`;
-  const ast = importStmts.concat(namedExportSuites);
 
-  return {
-    ast,
-    content,
-  };
+  return content;
 };

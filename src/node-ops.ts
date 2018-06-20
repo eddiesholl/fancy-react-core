@@ -19,6 +19,9 @@ export const byType = (type) => {
     return n.type === type;
   };
 };
+
+export function filterByType<T>(a: Array<{}>, astNodeType: string): T[] { return a.filter(byType(astNodeType)) as T[]; }
+
 export const byLocation = (point: Position) => {
   return (n) => {
     if (!point || !n || !n.loc) { return false; }
@@ -103,7 +106,7 @@ export const searchBySuperClass = (node: Node, superClassName: string): ClassDec
   return searchBy(node, tester);
 };
 
-export const searchForPropTypes = (node: Node, componentName: string) => {
+export const searchForPropTypes = (node: Node, componentName: string): Node[] => {
   const legacyTester = (n) => {
     const isAssignment = byType('AssignmentExpression')(n);
     const left = n.left;
@@ -130,6 +133,8 @@ export const searchForPropTypes = (node: Node, componentName: string) => {
   const staticProps = searchBy(classDef, staticPropTypesTester);
   if (staticProps && staticProps.value) {
     return staticProps.value.properties;
+  } else {
+    return [];
   }
 };
 
@@ -175,7 +180,7 @@ export const printNode = (node, depth = 0) => {
   if (node.type) {
     console.log(`${pad}${node.type} ${node.name || node.operator || ''} ${fmtLoc(start)} ${fmtLoc(end)}`);
   } else {
-    console.log(`${pad}${JSON.stringify(node)}`)
+    console.log(`${pad}${JSON.stringify(node)}`);
   }
   const subs = ['id', 'init', 'body', 'declaration', 'key', 'argument',
     'expression', 'callee', 'object', 'property', 'source', 'local',
