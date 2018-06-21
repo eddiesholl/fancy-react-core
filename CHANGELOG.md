@@ -1,3 +1,11 @@
+## 2.2.1
+
+- improvements to prop type detection
+
+## 2.2.0
+
+- Change `Position` type to better match IDE location type
+
 ## 2.1.2
 
 - feature: Basic tools for parsing and caching source files
