@@ -70,7 +70,9 @@ const extractComponent = (ast: ParseResult): IReactComponent | undefined => {
 
   if (componentClass !== undefined) {
     const className = componentClass.id.name;
-    const props = searchForPropTypes(ast, className).map(extractProp);
+    const props = searchForPropTypes(ast, className)
+      .map(extractProp)
+      .sort((a, b) => a.name.localeCompare(b.name));
 
     return {
       componentName: className,
