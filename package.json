@@ -9,6 +9,7 @@
   "types": "lib/types.d.ts",
   "scripts": {
     "test": "jest",
+    "test:watch": "jest --watch",
     "compile": "tsc && cp src/types.d.ts lib",
     "lint": "tslint -p ./",
     "lint:fix": "tslint -p ./ --fix",

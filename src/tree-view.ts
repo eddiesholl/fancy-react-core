@@ -1,9 +1,16 @@
-import { ClassDeclaration, Node, Program, Property } from 'estel-estree-builder/generated/es2015';
+import {
+  ClassDeclaration,
+  Expression,
+  Node,
+  Program,
+  Property,
+} from 'estel-estree-builder/generated/es2015';
 const fs = require('fs');
 const path = require('path');
 import R from 'ramda';
 
 import { parse } from './acorn';
+import { genJs } from './js-gen';
 import { searchBySuperClass, searchForPropTypes } from './node-ops';
 
 export interface IReactComponent {
@@ -13,9 +20,10 @@ export interface IReactComponent {
 }
 
 export interface IReactProperty {
-  name: string;
-  type: string;
   default: any;
+  name: string;
+  optional: boolean;
+  type: string;
 }
 
 export type ParseResult = Program | undefined;
@@ -28,11 +36,30 @@ export interface ICachedSourceFile {
   filePath: string;
 }
 
-const extractProp = (propNode: Property): IReactProperty => {
+export const extractProp = (propNode: Property): IReactProperty => {
+  const val = propNode.value;
+
+  const defaultValue = undefined;
+  const name = R.path<string>(['key', 'name'], propNode);
+  let propType = '?';
+  let optional = false;
+
+  if (val.type === 'CallExpression') {
+    propType = genJs(val);
+  } else {
+    if (R.pathEq(['object', 'type'], 'Identifier', val)) {
+      propType = R.path<string>(['property', 'name'], val);
+      optional = true;
+    } else {
+      propType = R.path<string>(['object', 'property', 'name'], val);
+    }
+  }
+
   return {
-    default: undefined,
-    name:  R.path<string>(['key', 'name'], propNode),
-    type: R.path<string>(['value', 'object', 'property', 'name'], propNode),
+    default: defaultValue,
+    name,
+    optional,
+    type: propType,
   };
 };
 
