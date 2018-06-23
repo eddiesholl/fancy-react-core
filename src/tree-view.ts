@@ -129,6 +129,19 @@ export class SourceFileCache {
     }
   }
 
+  public fileNames(): string[] {
+    return Array.from(this.data.keys());
+  }
+
+  public cachedFiles(): Array<Promise<ICachedSourceFile>> {
+    return Array.from(this.data.values());
+  }
+
+  public refresh(filePath: string): void {
+    const parsePromise = processFile(filePath);
+    this.data.set(filePath, parsePromise);
+  }
+
   public clear(filePath: string): void {
     this.data.delete(filePath);
   }
