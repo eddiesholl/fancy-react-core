@@ -1,3 +1,16 @@
+
+## 2.2.4
+
+- fix exports for mapStateToProps
+
+## 2.2.3
+
+- prevent generation of tests for literal exports
+
+## 2.2.2
+
+- new access methods of SourceFileCache
+
 ## 2.2.1
 
 - improvements to prop type detection
