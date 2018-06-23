@@ -1,4 +1,4 @@
-import e, { CallExpression } from 'estel-estree-builder/generated/es2015';
+import e, { CallExpression, Node, ExportNamedDeclaration } from 'estel-estree-builder/generated/es2015';
 import R from 'ramda';
 
 import { parse } from './acorn';
@@ -26,6 +26,24 @@ import { noNulls } from './utils';
 
 const { genJs, genJsList } = require('./js-gen');
 
+interface IBuilderOptions {
+  exportName: string;
+  inputModulePath: string;
+  isDefaultExport: boolean;
+}
+
+interface IBuilderResult {
+  namedSut: string;
+  suite: Node;
+}
+
+interface ITestSuite {
+  namedSut: string;
+  suite: Node;
+  defaultSut: string;
+  inputModulePath: string;
+}
+
 const varDecName = (vd) => {
   return vd && vd.id && vd.id.name;
 };
@@ -35,6 +53,12 @@ export const letForPropTypes = (propDefs) => {
     return propDefs.map((p) => p.mockVar);
   }
 };
+
+const isExportFunc = (exportNode) => {
+  const declarations = R.pathOr([], ['declaration', 'declarations'], exportNode);
+
+  return true;
+}
 
 export const jestMockFn = callFn(dot(e.identifier('jest'), 'fn'), []);
 const stringMock = (n) => e.literal(n + 'MockValue');
@@ -162,7 +186,7 @@ const buildSuiteForMapStateToProps = (exportNode, { exportName }) => {
   };
 };
 
-const buildSuiteForBasicFunc = (exportNode, { exportName }) => {
+const buildSuiteForBasicFunc = (exportNode: Node, { exportName }: IBuilderOptions): IBuilderResult => {
   const generateResult = cnst('result', callFn(exportName, []));
   const expectResult = callFn('expect', [e.identifier('result')]);
   const checkResult = callFn(
@@ -181,7 +205,10 @@ const buildSuiteForBasicFunc = (exportNode, { exportName }) => {
   };
 };
 
-const addSut = (builderResult, { isDefaultExport, exportName, inputModulePath }) => {
+const addSut = (
+  builderResult: IBuilderResult,
+  { isDefaultExport, exportName, inputModulePath }: IBuilderOptions,
+): ITestSuite => {
   const sutName = exportName || builderResult.namedSut;
   const namedSut = isDefaultExport ? null : sutName;
   const defaultSut = isDefaultExport ? sutName : null;
@@ -194,8 +221,10 @@ const addSut = (builderResult, { isDefaultExport, exportName, inputModulePath })
   };
 };
 
-const buildSuiteFor = (exportNode, allNodes, inputModulePath) => {
-  const exportDecl = exportNode.declaration;
+// REVISIT: The exportNode should be the content of exportNode.declaration, to iterate multi export statements
+// Right now it only catches the first one
+const buildSuiteFor = (exportNode: ExportNamedDeclaration, allNodes, inputModulePath): ITestSuite | undefined => {
+  const exportDecl = exportNode.declaration as any;
   const isTransitiveExport = exportDecl.type === 'Identifier';
   const declaringNode =
     isTransitiveExport ?
@@ -216,6 +245,7 @@ const buildSuiteFor = (exportNode, allNodes, inputModulePath) => {
   const classComponentNode = searchBySuperClass(declaringNode, "Component");
   const exportName = varDecName(classComponentNode || varDec);
   const hasJsx = searchByType(declaringNode, "JSXElement");
+  const arrowFunc = searchByType(declaringNode, "ArrowFunctionExpression");
 
   const builderOptions = {
     exportName,
@@ -223,15 +253,17 @@ const buildSuiteFor = (exportNode, allNodes, inputModulePath) => {
     isDefaultExport: exportNode.type === "ExportDefaultDeclaration",
   };
 
-  let builderResult = {};
+  let builderResult;
   if (exportName === 'mapStateToProps') {
     builderResult = buildSuiteForMapStateToProps(exportNode, builderOptions);
   } else if (classComponentNode) {
     builderResult = buildSuiteForClassBased(classComponentNode, builderOptions, allNodes);
   } else if (hasJsx) {
     builderResult = buildSuiteForJsx(exportNode, builderOptions);
-  } else {
+  } else if (arrowFunc) {
     builderResult = buildSuiteForBasicFunc(exportNode, builderOptions);
+  } else {
+    return;
   }
 
   return addSut(builderResult, builderOptions);
