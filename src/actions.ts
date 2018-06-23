@@ -76,7 +76,7 @@ export const tests = ({ fileSystem, formatter, ide, project, settings }: IState,
     editor.setText(formattedContent);
   })
   .catch((e) => {
-    ide.log(`Failed to open test file ${testFilePath}: ${e}`);
+    ide.log(`Failed to generate test file ${testFilePath}: ${e}`);
   });
 };
 

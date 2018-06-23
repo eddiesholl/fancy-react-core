@@ -8,14 +8,14 @@
   ],
   "types": "lib/types.d.ts",
   "scripts": {
-    "check": "npm run lint && npm run test",
+    "check": "npm run lint && npm run compile && npm run test",
     "test": "jest",
     "test:watch": "jest --watch",
     "compile": "tsc && cp src/types.d.ts lib",
     "lint": "tslint -p ./",
     "lint:fix": "tslint -p ./ --fix",
-    "publish": "np --no-yarn --no-publish && npm publish",
-    "prepublishOnly": "npm run lint && npm run compile",
+    "publish": "np --no-yarn",
+    "prepublishOnly": "npm run check",
     "build": "tsc",
     "build:watch": "tsc -w",
     "type-check": "tsc"

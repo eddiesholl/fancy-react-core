@@ -155,24 +155,23 @@ const buildSuiteForJsx = (exportNode, { exportName }) => {
 };
 
 const buildSuiteForMapStateToProps = (exportNode, { exportName }) => {
+  const generateResult = cnst(
+    'result',
+    callFn(
+      exportName,
+      [e.identifier('state')],
+    ),
+  );
+
   const suite = callFn(
     'describe',
     [
       e.literal(exportName),
-      e.function(
-        [],
-        e.functionBody(
-          [cnst(
-            'result',
-            callFn(
-              exportName,
-              [e.identifier('state')],
-            ),
-          )],
-        ),
-        'foo-function',
+      arrow(
+        buildItBlock('can render', [generateResult]),
       ),
-    ]);
+    ],
+  );
 
   return {
     namedSut: exportName,
