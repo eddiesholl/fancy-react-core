@@ -1,4 +1,4 @@
-import e, { CallExpression, Node, ExportNamedDeclaration } from 'estel-estree-builder/generated/es2015';
+import e, { CallExpression, ExportNamedDeclaration, Node } from 'estel-estree-builder/generated/es2015';
 import R from 'ramda';
 
 import { parse } from './acorn';
@@ -53,12 +53,6 @@ export const letForPropTypes = (propDefs) => {
     return propDefs.map((p) => p.mockVar);
   }
 };
-
-const isExportFunc = (exportNode) => {
-  const declarations = R.pathOr([], ['declaration', 'declarations'], exportNode);
-
-  return true;
-}
 
 export const jestMockFn = callFn(dot(e.identifier('jest'), 'fn'), []);
 const stringMock = (n) => e.literal(n + 'MockValue');
