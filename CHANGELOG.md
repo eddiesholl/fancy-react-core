@@ -1,3 +1,6 @@
+## 2.2.5
+
+- Extract defaults for optional props
 
 ## 2.2.4
 
