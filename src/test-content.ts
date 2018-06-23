@@ -252,7 +252,7 @@ const mergeSuites = (existing, incoming) => {
   return R.values(R.merge(existingByName, incomingByName));
 };
 
-export const generate = (inputText: string, existingText, inputModulePath): string => {
+export const generateTests = (inputText: string, existingText, inputModulePath): string => {
 
   if (!inputText) { return ''; }
 

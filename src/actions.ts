@@ -4,7 +4,7 @@ const fs = require('fs');
 
 import { ComponentDetails, IFileSystem, IIDE, IState, Project } from "./types";
 const { generateComponent } = require("./react-content");
-const testContent = require('./test-content');
+import { generateTests } from './test-content';
 
 export const generate = ( { fileSystem, formatter, ide, project, settings }: IState) => {
   const editor = ide.getEditor();
@@ -43,11 +43,11 @@ export const generate = ( { fileSystem, formatter, ide, project, settings }: ISt
   });
 };
 
-export const tests = ({ fileSystem, formatter, ide, project, settings }: IState) => {
+export const tests = ({ fileSystem, formatter, ide, project, settings }: IState, sourceFilePath?: string) => {
   const activeEditor = ide.getEditor();
 
-  const inputFilePath = activeEditor.getFilePath();
-  const inputText = activeEditor.getText();
+  const inputFilePath = sourceFilePath ? sourceFilePath : activeEditor.getFilePath();
+  const inputText = sourceFilePath ? fs.readFileSync(sourceFilePath).toString() : activeEditor.getText();
 
   const sourceFileWithinProject = project.fullPathToProjectPath(inputFilePath);
 
@@ -68,9 +68,9 @@ export const tests = ({ fileSystem, formatter, ide, project, settings }: IState)
 
     // initModulePaths(this.config.projectRoot);
 
-    const generatedTests = testContent.generate(inputText, existingText, inputModulePath);
+    const generatedTests = generateTests(inputText, existingText, inputModulePath);
     const formattedContent = formatter.format(
-      generatedTests.content,
+      generatedTests,
       testFilePath);
 
     editor.setText(formattedContent);
