@@ -12,11 +12,13 @@ import R from 'ramda';
 import { parse } from './acorn';
 import { genJs } from './js-gen';
 import { searchBySuperClass, searchForPropDefaults, searchForPropTypes } from './node-ops';
+import { getReduxDetails, IReduxDetails } from './redux';
 
 export interface IReactComponent {
   componentName: string;
   definition: Node;
   props: IReactProperty[];
+  redux: IReduxDetails;
 }
 
 export interface IReactProperty {
@@ -91,10 +93,13 @@ const extractComponent = (ast: ParseResult): IReactComponent | undefined => {
       .map((prop) => extractProp(prop, propDefaults))
       .sort((a, b) => a.name.localeCompare(b.name));
 
+    const redux = getReduxDetails(ast);
+
     return {
       componentName: className,
       definition: ast,
       props,
+      redux,
     };
   }
 };
