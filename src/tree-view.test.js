@@ -65,10 +65,16 @@ const callDefinition = {
   }
 }
 
+
 describe('extractProp', () => {
+  let emptyMap
+  beforeEach(() => {
+    emptyMap = new Map();
+  })
+
   describe('when the prop is a simple definition', () => {
     it('extracts the prop', () => {
-      expect(extractProp(simpleDefinition)).toEqual({
+      expect(extractProp(simpleDefinition, emptyMap)).toEqual({
         default: undefined,
         optional: false,
         name: 'propName',
@@ -79,7 +85,7 @@ describe('extractProp', () => {
 
   describe('when the prop is optional', () => {
     it('extracts the prop', () => {
-      expect(extractProp(optionalDefinition)).toEqual({
+      expect(extractProp(optionalDefinition, emptyMap)).toEqual({
         default: undefined,
         optional: true,
         name: 'propName',
@@ -90,8 +96,24 @@ describe('extractProp', () => {
 
   describe('when the prop type is complex', () => {
     it('extracts the prop', () => {
-      expect(extractProp(callDefinition)).toEqual({
+      expect(extractProp(callDefinition, emptyMap)).toEqual({
         default: undefined,
+        optional: false,
+        name: 'propName',
+        type: 'PropTypes.oneOf(arg0)',
+      })
+    })
+  })
+
+  describe('when the prop has a default', () => {
+    let mapWithFoo
+    beforeEach(() => {
+      mapWithFoo = new Map();
+      mapWithFoo.set('propName', 'foo');
+    })
+    it('grabs the default', () => {
+      expect(extractProp(callDefinition, mapWithFoo)).toEqual({
+        default: 'foo',
         optional: false,
         name: 'propName',
         type: 'PropTypes.oneOf(arg0)',

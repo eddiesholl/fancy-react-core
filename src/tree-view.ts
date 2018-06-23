@@ -11,7 +11,7 @@ import R from 'ramda';
 
 import { parse } from './acorn';
 import { genJs } from './js-gen';
-import { searchBySuperClass, searchForPropTypes } from './node-ops';
+import { searchBySuperClass, searchForPropDefaults, searchForPropTypes } from './node-ops';
 
 export interface IReactComponent {
   componentName: string;
@@ -36,11 +36,26 @@ export interface ICachedSourceFile {
   filePath: string;
 }
 
-export const extractProp = (propNode: Property): IReactProperty => {
+const propListToMap = (props: Property[]): Map<string, string> => {
+  const result = new Map<string, string>();
+
+  props.forEach((p) => {
+    const key = R.path<string>(['key', 'name'], p);
+
+    if (key !== undefined) {
+      const val = R.path<string>(['value', 'raw'], p);
+      result.set(key, val);
+    }
+  });
+
+  return result;
+};
+
+export const extractProp = (propNode: Property, propDefaults: Map<string, string>): IReactProperty => {
   const val = propNode.value;
 
-  const defaultValue = undefined;
   const name = R.path<string>(['key', 'name'], propNode);
+  const defaultValue = propDefaults.get(name);
   let propType = '?';
   let optional = false;
 
@@ -70,8 +85,10 @@ const extractComponent = (ast: ParseResult): IReactComponent | undefined => {
 
   if (componentClass !== undefined) {
     const className = componentClass.id.name;
+    const propDefaults = propListToMap(searchForPropDefaults(ast, className));
+
     const props = searchForPropTypes(ast, className)
-      .map(extractProp)
+      .map((prop) => extractProp(prop, propDefaults))
       .sort((a, b) => a.name.localeCompare(b.name));
 
     return {

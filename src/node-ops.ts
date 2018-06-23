@@ -1,5 +1,5 @@
 /* tslint:disable:no-console */
-import { ClassDeclaration, Node } from 'estel-estree-builder/generated/es2015';
+import { ClassDeclaration, Node, Property } from 'estel-estree-builder/generated/es2015';
 import R from 'ramda';
 import { Position } from './types';
 
@@ -106,7 +106,7 @@ export const searchBySuperClass = (node: Node, superClassName: string): ClassDec
   return searchBy(node, tester);
 };
 
-export const searchForPropTypes = (node: Node, componentName: string): Node[] => {
+const searchForClassProperty = (propertyName: string) => (node: Node, componentName: string): Property[] => {
   const legacyTester = (n) => {
     const isAssignment = byType('AssignmentExpression')(n);
     const left = n.left;
@@ -115,7 +115,7 @@ export const searchForPropTypes = (node: Node, componentName: string): Node[] =>
       const subjectName = left.object.name;
       const propName = left.property.name;
 
-      if (subjectName === componentName && propName === 'propTypes') {
+      if (subjectName === componentName && propName === propertyName) {
         const isRightObject = byType('ObjectExpression')(n.right);
         return isRightObject && n.right.properties;
       }
@@ -123,7 +123,7 @@ export const searchForPropTypes = (node: Node, componentName: string): Node[] =>
   };
   const staticPropTypesTester = (n) => {
     return byType('ClassProperty')(n) &&
-      n.static && R.pathEq(['key', 'name'], 'propTypes', n);
+      n.static && R.pathEq(['key', 'name'], propertyName, n);
   };
 
   const legacyMatch = searchBy(node, legacyTester);
@@ -137,6 +137,9 @@ export const searchForPropTypes = (node: Node, componentName: string): Node[] =>
     return [];
   }
 };
+
+export const searchForPropTypes = searchForClassProperty('propTypes');
+export const searchForPropDefaults = searchForClassProperty('defaultProps');
 
 export const searchByIdName = (node, idName) => {
   const tester = R.pathEq(['id', 'name'], idName);
