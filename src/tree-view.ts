@@ -21,10 +21,17 @@ export interface IReactComponent {
   redux: IReduxDetails;
 }
 
+export enum PropStyle {
+  Input,
+  ReduxFunc,
+  State,
+}
+
 export interface IReactProperty {
   default: any;
   name: string;
   optional: boolean;
+  style: PropStyle;
   type: string;
 }
 
@@ -53,7 +60,8 @@ const propListToMap = (props: Property[]): Map<string, string> => {
   return result;
 };
 
-export const extractProp = (propNode: Property, propDefaults: Map<string, string>): IReactProperty => {
+export const extractProp =
+  (propNode: Property, propDefaults: Map<string, string>, redux: IReduxDetails): IReactProperty => {
   const val = propNode.value;
 
   const name = R.path<string>(['key', 'name'], propNode);
@@ -72,10 +80,18 @@ export const extractProp = (propNode: Property, propDefaults: Map<string, string
     }
   }
 
+  let style = PropStyle.Input;
+  if (redux.funcNames.some(R.equals(name))) {
+    style = PropStyle.ReduxFunc;
+  } else if (redux.returnedPropNames.some(R.equals(name))) {
+    style = PropStyle.State;
+  }
+
   return {
     default: defaultValue,
     name,
     optional,
+    style,
     type: propType,
   };
 };
@@ -88,12 +104,11 @@ const extractComponent = (ast: ParseResult): IReactComponent | undefined => {
   if (componentClass !== undefined) {
     const className = componentClass.id.name;
     const propDefaults = propListToMap(searchForPropDefaults(ast, className));
+    const redux = getReduxDetails(ast);
 
     const props = searchForPropTypes(ast, className)
-      .map((prop) => extractProp(prop, propDefaults))
+      .map((prop) => extractProp(prop, propDefaults, redux))
       .sort((a, b) => a.name.localeCompare(b.name));
-
-    const redux = getReduxDetails(ast);
 
     return {
       componentName: className,
