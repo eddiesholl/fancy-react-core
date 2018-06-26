@@ -57,11 +57,10 @@ export const getReduxDetails = (ast: Node): IReduxDetails => {
     };
   } else {
     const subject = R.propOr('unknown', 'name', connectCall.arguments[0]) as string;
-    // const subject = connectCall.arguments[0] as string;
     const calleeArgs = R.pathOr<Node[]>([], ['callee', 'arguments'], connectCall);
 
-    const actionCreatorsArg = calleeArgs[0];
-    const mapStateArg = calleeArgs[1];
+    const mapStateArg = calleeArgs[0];
+    const actionCreatorsArg = calleeArgs[1];
 
     funcNames = findActionCreators(ast, actionCreatorsArg);
     returnedPropNames = findMSTPReturnArgs(ast, mapStateArg);
