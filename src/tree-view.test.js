@@ -1,4 +1,4 @@
-const { extractProp } = require("./tree-view");
+const { extractProp, PropStyle } = require("./tree-view");
 
 const simpleDefinition = {
   type: 'Property',
@@ -65,6 +65,12 @@ const callDefinition = {
   }
 }
 
+const reduxEmpty = {
+  connected: false,
+  funcNames: [],
+  returnedPropNames: [],
+  subject: '',
+};
 
 describe('extractProp', () => {
   let emptyMap
@@ -74,10 +80,11 @@ describe('extractProp', () => {
 
   describe('when the prop is a simple definition', () => {
     it('extracts the prop', () => {
-      expect(extractProp(simpleDefinition, emptyMap)).toEqual({
+      expect(extractProp(simpleDefinition, emptyMap, reduxEmpty)).toEqual({
         default: undefined,
         optional: false,
         name: 'propName',
+        style: PropStyle.Input,
         type: 'func',
       })
     })
@@ -85,10 +92,11 @@ describe('extractProp', () => {
 
   describe('when the prop is optional', () => {
     it('extracts the prop', () => {
-      expect(extractProp(optionalDefinition, emptyMap)).toEqual({
+      expect(extractProp(optionalDefinition, emptyMap, reduxEmpty)).toEqual({
         default: undefined,
         optional: true,
         name: 'propName',
+        style: PropStyle.Input,
         type: 'node',
       })
     })
@@ -96,10 +104,11 @@ describe('extractProp', () => {
 
   describe('when the prop type is complex', () => {
     it('extracts the prop', () => {
-      expect(extractProp(callDefinition, emptyMap)).toEqual({
+      expect(extractProp(callDefinition, emptyMap, reduxEmpty)).toEqual({
         default: undefined,
         optional: false,
         name: 'propName',
+        style: PropStyle.Input,
         type: 'PropTypes.oneOf(arg0)',
       })
     })
@@ -112,10 +121,11 @@ describe('extractProp', () => {
       mapWithFoo.set('propName', 'foo');
     })
     it('grabs the default', () => {
-      expect(extractProp(callDefinition, mapWithFoo)).toEqual({
+      expect(extractProp(callDefinition, mapWithFoo, reduxEmpty)).toEqual({
         default: 'foo',
         optional: false,
         name: 'propName',
+        style: PropStyle.Input,
         type: 'PropTypes.oneOf(arg0)',
       })
     })

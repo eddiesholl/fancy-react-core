@@ -1,13 +1,12 @@
 import { CallExpression, Node } from "estel-estree-builder/generated/es2015";
 import R from 'ramda';
 
-import { byType, searchBy, searchByIdName } from "./node-ops";
+import { byType, searchBy, searchByIdName, searchByType } from "./node-ops";
 import { noNulls } from "./utils";
 
 export interface IReduxDetails {
   connected: boolean;
   funcNames: string[];
-  mstpFunc: Node | undefined;
   returnedPropNames: string[];
   subject: string;
 }
@@ -26,8 +25,19 @@ const findActionCreators = (ast: Node, actionCreatorsArg: Node): string[] => {
   }
 };
 
-const findMSTPReturnArgs = (mstpArg: Node): string[] => {
-  return [];
+const findMSTPReturnArgs = (ast: Node, mapStateArg: Node): string[] => {
+  if (mapStateArg.type === "Identifier") {
+    const name = R.propOr(undefined, 'name', mapStateArg);
+    if (name === 'undefined') {
+      return [];
+    } else {
+      const decl = searchByIdName(ast, name);
+      const returnStmt = searchByType(decl, 'ReturnStatement');
+      const props = R.pathOr([], ['argument', 'properties'], returnStmt);
+
+      return noNulls(props.map(R.path(['key', 'name'])));
+    }
+  }
 };
 
 export const getReduxDetails = (ast: Node): IReduxDetails => {
@@ -35,15 +45,13 @@ export const getReduxDetails = (ast: Node): IReduxDetails => {
     ast,
     (node) => byType('CallExpression') && R.path(['callee', 'callee', 'name'], node) === 'connect') as CallExpression;
 
-  let mstpFunc;
   let funcNames = [];
-  const returnedPropNames = [];
+  let returnedPropNames = [];
 
   if (connectCall === undefined) {
     return {
       connected: false,
       funcNames,
-      mstpFunc,
       returnedPropNames,
       subject: '',
     };
@@ -56,11 +64,11 @@ export const getReduxDetails = (ast: Node): IReduxDetails => {
     const mapStateArg = calleeArgs[1];
 
     funcNames = findActionCreators(ast, actionCreatorsArg);
+    returnedPropNames = findMSTPReturnArgs(ast, mapStateArg);
 
     return {
       connected: true,
       funcNames,
-      mstpFunc,
       returnedPropNames,
       subject,
     };
